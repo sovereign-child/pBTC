@@ -1,0 +1,61 @@
+groups:
+  - name: pbtc-bridge
+    rules:
+      - alert: BridgeApiDown
+        expr: up{job="pbtc-bridge-api"} == 0
+        for: 2m
+        labels:
+          severity: critical
+        annotations:
+          summary: "pBTC Bridge API is down"
+          description: "Bridge API has been unreachable for more than 2 minutes."
+
+      - alert: MintingDisabled
+        expr: pbtc_minting_allowed == 0
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "pBTC minting is disabled"
+          description: "Guardian quorum not met — minting has been paused for 5+ minutes."
+
+      - alert: HighFailureRate
+        expr: |
+          (
+            sum(rate(pbtc_bridge_requests_failed_total[5m]))
+            /
+            sum(rate(pbtc_bridge_requests_total[5m]))
+          ) > 0.05
+        for: 3m
+        labels:
+          severity: warning
+        annotations:
+          summary: "pBTC Bridge API failure rate above 5%"
+          description: "More than 5% of requests are failing over the last 5 minutes."
+
+      - alert: HighPendingQueue
+        expr: pbtc_pending_queue_depth > 50
+        for: 10m
+        labels:
+          severity: warning
+        annotations:
+          summary: "pBTC pending queue depth is high"
+          description: "More than 50 operations pending for 10+ minutes."
+
+      - alert: NoGuardianHeartbeat
+        expr: pbtc_guardians_active == 0
+        for: 3m
+        labels:
+          severity: critical
+        annotations:
+          summary: "No active guardians"
+          description: "Zero guardians have sent a heartbeat within the TTL window."
+
+      - alert: SlowDeposits
+        expr: pbtc_median_deposit_completion_ms > 300000
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Deposits taking longer than 5 minutes"
+          description: "Median deposit completion time exceeds 300 seconds."

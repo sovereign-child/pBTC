@@ -1,0 +1,225 @@
+{
+  "annotations": { "list": [] },
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 1,
+  "id": null,
+  "links": [],
+  "panels": [
+    {
+      "id": 1,
+      "title": "Bridge API Status",
+      "type": "stat",
+      "gridPos": { "h": 4, "w": 4, "x": 0, "y": 0 },
+      "targets": [
+        {
+          "expr": "up{job=\"pbtc-bridge-api\"}",
+          "legendFormat": "API Up"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "mappings": [
+            { "type": "value", "options": { "0": { "text": "DOWN", "color": "red" }, "1": { "text": "UP", "color": "green" } } }
+          ],
+          "thresholds": { "mode": "absolute", "steps": [{ "color": "red", "value": null }, { "color": "green", "value": 1 }] }
+        }
+      }
+    },
+    {
+      "id": 2,
+      "title": "Minting Allowed",
+      "type": "stat",
+      "gridPos": { "h": 4, "w": 4, "x": 4, "y": 0 },
+      "targets": [
+        {
+          "expr": "pbtc_minting_allowed",
+          "legendFormat": "Minting"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "mappings": [
+            { "type": "value", "options": { "0": { "text": "PAUSED", "color": "red" }, "1": { "text": "ENABLED", "color": "green" } } }
+          ],
+          "thresholds": { "mode": "absolute", "steps": [{ "color": "red", "value": null }, { "color": "green", "value": 1 }] }
+        }
+      }
+    },
+    {
+      "id": 3,
+      "title": "Active Guardians",
+      "type": "stat",
+      "gridPos": { "h": 4, "w": 4, "x": 8, "y": 0 },
+      "targets": [
+        { "expr": "pbtc_guardians_active", "legendFormat": "Active" },
+        { "expr": "pbtc_guardians_minimum_for_mint", "legendFormat": "Required" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "thresholds": { "mode": "absolute", "steps": [{ "color": "red", "value": null }, { "color": "yellow", "value": 1 }, { "color": "green", "value": 2 }] }
+        }
+      }
+    },
+    {
+      "id": 4,
+      "title": "Uptime",
+      "type": "stat",
+      "gridPos": { "h": 4, "w": 4, "x": 12, "y": 0 },
+      "targets": [
+        {
+          "expr": "pbtc_bridge_uptime_seconds / 3600",
+          "legendFormat": "Hours"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "h",
+          "decimals": 1,
+          "thresholds": { "mode": "absolute", "steps": [{ "color": "green", "value": null }] }
+        }
+      }
+    },
+    {
+      "id": 5,
+      "title": "Pending Queue",
+      "type": "stat",
+      "gridPos": { "h": 4, "w": 4, "x": 16, "y": 0 },
+      "targets": [
+        { "expr": "pbtc_pending_deposits", "legendFormat": "Deposits" },
+        { "expr": "pbtc_pending_redemptions", "legendFormat": "Redemptions" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "thresholds": { "mode": "absolute", "steps": [{ "color": "green", "value": null }, { "color": "yellow", "value": 10 }, { "color": "red", "value": 50 }] }
+        }
+      }
+    },
+    {
+      "id": 6,
+      "title": "Stale Guardians",
+      "type": "stat",
+      "gridPos": { "h": 4, "w": 4, "x": 20, "y": 0 },
+      "targets": [
+        { "expr": "pbtc_stale_guardian_count", "legendFormat": "Stale" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "thresholds": { "mode": "absolute", "steps": [{ "color": "green", "value": null }, { "color": "yellow", "value": 1 }, { "color": "red", "value": 3 }] }
+        }
+      }
+    },
+    {
+      "id": 10,
+      "title": "Request Rate (per second)",
+      "type": "timeseries",
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 4 },
+      "targets": [
+        { "expr": "rate(pbtc_bridge_requests_total[1m])", "legendFormat": "{{operation}}" }
+      ],
+      "fieldConfig": {
+        "defaults": { "unit": "reqps", "custom": { "fillOpacity": 15, "lineWidth": 2 } }
+      }
+    },
+    {
+      "id": 11,
+      "title": "Failure Rate (per second)",
+      "type": "timeseries",
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 4 },
+      "targets": [
+        { "expr": "rate(pbtc_bridge_requests_failed_total[1m])", "legendFormat": "{{operation}}" }
+      ],
+      "fieldConfig": {
+        "defaults": { "unit": "reqps", "custom": { "fillOpacity": 15, "lineWidth": 2 }, "color": { "mode": "palette-classic" } }
+      }
+    },
+    {
+      "id": 12,
+      "title": "Request Latency p50 / p95 / p99",
+      "type": "timeseries",
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 12 },
+      "targets": [
+        { "expr": "histogram_quantile(0.50, rate(pbtc_bridge_request_duration_ms_bucket[5m]))", "legendFormat": "p50 {{operation}}" },
+        { "expr": "histogram_quantile(0.95, rate(pbtc_bridge_request_duration_ms_bucket[5m]))", "legendFormat": "p95 {{operation}}" },
+        { "expr": "histogram_quantile(0.99, rate(pbtc_bridge_request_duration_ms_bucket[5m]))", "legendFormat": "p99 {{operation}}" }
+      ],
+      "fieldConfig": {
+        "defaults": { "unit": "ms", "custom": { "fillOpacity": 10, "lineWidth": 2 } }
+      }
+    },
+    {
+      "id": 13,
+      "title": "HTTP Requests by Status Code",
+      "type": "timeseries",
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 12 },
+      "targets": [
+        { "expr": "sum by (status) (rate(pbtc_http_requests_total[1m]))", "legendFormat": "HTTP {{status}}" }
+      ],
+      "fieldConfig": {
+        "defaults": { "unit": "reqps", "custom": { "fillOpacity": 20, "lineWidth": 2 } }
+      }
+    },
+    {
+      "id": 14,
+      "title": "Median Deposit Completion Time",
+      "type": "timeseries",
+      "gridPos": { "h": 6, "w": 12, "x": 0, "y": 20 },
+      "targets": [
+        { "expr": "pbtc_median_deposit_completion_ms / 1000", "legendFormat": "Deposit (sec)" }
+      ],
+      "fieldConfig": {
+        "defaults": { "unit": "s", "custom": { "fillOpacity": 15, "lineWidth": 2 } }
+      }
+    },
+    {
+      "id": 15,
+      "title": "Median Redemption Completion Time",
+      "type": "timeseries",
+      "gridPos": { "h": 6, "w": 12, "x": 12, "y": 20 },
+      "targets": [
+        { "expr": "pbtc_median_redemption_completion_ms / 1000", "legendFormat": "Redemption (sec)" }
+      ],
+      "fieldConfig": {
+        "defaults": { "unit": "s", "custom": { "fillOpacity": 15, "lineWidth": 2 } }
+      }
+    },
+    {
+      "id": 16,
+      "title": "Guardian Count Over Time",
+      "type": "timeseries",
+      "gridPos": { "h": 6, "w": 12, "x": 0, "y": 26 },
+      "targets": [
+        { "expr": "pbtc_guardians_active", "legendFormat": "Active" },
+        { "expr": "pbtc_guardians_stale", "legendFormat": "Stale" },
+        { "expr": "pbtc_guardians_minimum_for_mint", "legendFormat": "Min Required" }
+      ],
+      "fieldConfig": {
+        "defaults": { "custom": { "fillOpacity": 10, "lineWidth": 2 } }
+      }
+    },
+    {
+      "id": 17,
+      "title": "Pending Queue Depth Over Time",
+      "type": "timeseries",
+      "gridPos": { "h": 6, "w": 12, "x": 12, "y": 26 },
+      "targets": [
+        { "expr": "pbtc_pending_deposits", "legendFormat": "Deposits" },
+        { "expr": "pbtc_pending_redemptions", "legendFormat": "Redemptions" },
+        { "expr": "pbtc_pending_queue_depth", "legendFormat": "Total" }
+      ],
+      "fieldConfig": {
+        "defaults": { "custom": { "fillOpacity": 15, "lineWidth": 2, "stacking": { "mode": "none" } } }
+      }
+    }
+  ],
+  "refresh": "15s",
+  "schemaVersion": 39,
+  "tags": ["pbtc", "bridge", "testnet"],
+  "templating": { "list": [] },
+  "time": { "from": "now-1h", "to": "now" },
+  "timepicker": {},
+  "timezone": "browser",
+  "title": "pBTC Bridge Overview",
+  "uid": "pbtc-bridge-overview",
+  "version": 1
+}

@@ -7,12 +7,17 @@
 # Services:
 #   bridge-api    — mock bridge API (deposit/redeem lifecycle)
 #   portal        — pBTC web portal (React + Vite, served by nginx)
-#   monitor       — tBTC monitoring sidecar
+#   monitor       — tBTC monitoring sidecar      (--profile full)
+#   prometheus    — metrics collection            (--profile full)
+#   grafana       — dashboards and visualization  (--profile full)
 #   guardian-hb   — guardian heartbeat worker
 #
 # After startup:
 #   Portal:     http://localhost:8080
 #   Bridge API: http://localhost:3007/health
+#   Metrics:    http://localhost:3007/metrics
+#   Prometheus: http://localhost:9090    (--profile full)
+#   Grafana:    http://localhost:3000    (--profile full)
 ###############################################################################
 
 name: pbtc-testnet
@@ -142,5 +147,57 @@ services:
       bridge-api:
         condition: service_healthy
 
+  # ── Prometheus (metrics collection) ───────────────────────────────────
+  prometheus:
+    image: prom/prometheus:v2.53.3
+    restart: unless-stopped
+    ports:
+      - "${PROMETHEUS_PORT:-9090}:9090"
+    volumes:
+      - ./ops/monitoring/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - ./ops/monitoring/alert-rules.yml:/etc/prometheus/alert-rules.yml:ro
+      - prometheus_data:/prometheus
+    command:
+      - "--config.file=/etc/prometheus/prometheus.yml"
+      - "--storage.tsdb.retention.time=30d"
+      - "--web.enable-lifecycle"
+    deploy:
+      resources:
+        limits:
+          memory: 256M
+          cpus: "0.50"
+    depends_on:
+      bridge-api:
+        condition: service_healthy
+    profiles:
+      - full
+
+  # ── Grafana (dashboards and visualization) ───────────────────────────
+  grafana:
+    image: grafana/grafana:11.4.0
+    restart: unless-stopped
+    ports:
+      - "${GRAFANA_PORT:-3000}:3000"
+    environment:
+      GF_SECURITY_ADMIN_USER: "${GRAFANA_ADMIN_USER:-admin}"
+      GF_SECURITY_ADMIN_PASSWORD: "${GRAFANA_ADMIN_PASSWORD:-pbtc-testnet}"
+      GF_USERS_ALLOW_SIGN_UP: "false"
+      GF_DASHBOARDS_DEFAULT_HOME_DASHBOARD_PATH: /var/lib/grafana/dashboards/pbtc-bridge.json
+    volumes:
+      - ./ops/monitoring/grafana/provisioning:/etc/grafana/provisioning:ro
+      - ./ops/monitoring/grafana/dashboards:/var/lib/grafana/dashboards:ro
+      - grafana_data:/var/lib/grafana
+    deploy:
+      resources:
+        limits:
+          memory: 256M
+          cpus: "0.50"
+    depends_on:
+      - prometheus
+    profiles:
+      - full
+
 volumes:
   monitor_data:
+  prometheus_data:
+  grafana_data:
