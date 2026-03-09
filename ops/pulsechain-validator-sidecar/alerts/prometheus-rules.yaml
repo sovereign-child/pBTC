@@ -1,0 +1,20 @@
+groups:
+  - name: tbtc-sidecar
+    rules:
+      - alert: TbtcSidecarContainerDown
+        expr: up{job="tbtc-sidecar"} == 0
+        for: 5m
+        labels:
+          severity: critical
+        annotations:
+          summary: "tBTC sidecar is down"
+          description: "The tBTC sidecar scrape target is unavailable for 5 minutes."
+
+      - alert: TbtcSidecarRestartLoop
+        expr: increase(container_restart_count{container=~".*tbtc-monitor.*"}[15m]) > 3
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "tBTC sidecar restarting frequently"
+          description: "Container restarted more than 3 times in 15 minutes."

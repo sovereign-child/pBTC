@@ -1,5 +1,6 @@
 {
   "scripts": {
+    "dev:bootstrap": "node scripts/dev-bootstrap.mjs",
     "format": "prettier --check .",
     "format:fix": "prettier --write ."
   },
