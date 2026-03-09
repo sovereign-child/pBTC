@@ -8,6 +8,7 @@ on:
       - "apps/pbtc-portal/**"
       - "monitoring/**"
       - "docker-compose.testnet.yml"
+      - "docker-compose.testnet.prebuilt.yml"
       - ".github/workflows/testnet-docker.yml"
   pull_request:
     paths:
@@ -15,6 +16,7 @@ on:
       - "apps/pbtc-portal/**"
       - "monitoring/**"
       - "docker-compose.testnet.yml"
+      - "docker-compose.testnet.prebuilt.yml"
       - ".github/workflows/testnet-docker.yml"
 
 env:
@@ -99,5 +101,8 @@ jobs:
       - name: Copy testnet env
         run: cp .env.testnet.example .env.testnet
 
-      - name: Validate compose config
+      - name: Validate compose config (build)
         run: docker compose -f docker-compose.testnet.yml --env-file .env.testnet config --quiet
+
+      - name: Validate compose config (prebuilt)
+        run: docker compose -f docker-compose.testnet.prebuilt.yml --env-file .env.testnet config --quiet

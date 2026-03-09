@@ -84,6 +84,9 @@ pause
 exit /b 0
 
 :stop
+if not exist ".env.testnet" (
+    copy ".env.testnet.example" ".env.testnet" >nul 2>&1
+)
 echo Stopping pBTC testnet stack...
 docker compose -f docker-compose.testnet.yml --env-file .env.testnet --profile full down --remove-orphans
 echo [OK] Stopped.
