@@ -1,0 +1,27 @@
+<svg width="512" height="512" viewBox="0 0 512 512" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="bg" x1="64" y1="48" x2="448" y2="464" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#FF2FAE"/>
+      <stop offset="1" stop-color="#1EDCFF"/>
+    </linearGradient>
+    <linearGradient id="inner" x1="164" y1="120" x2="352" y2="384" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#0A0620"/>
+      <stop offset="1" stop-color="#171042"/>
+    </linearGradient>
+    <filter id="glow" x="0" y="0" width="512" height="512" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+      <feGaussianBlur stdDeviation="10" result="blur"/>
+      <feMerge>
+        <feMergeNode in="blur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+
+  <rect x="48" y="48" width="416" height="416" rx="108" fill="#0A061B"/>
+  <rect x="64" y="64" width="384" height="384" rx="96" stroke="url(#bg)" stroke-width="14" filter="url(#glow)"/>
+  <circle cx="256" cy="256" r="118" fill="url(#inner)"/>
+  <circle cx="256" cy="256" r="118" stroke="url(#bg)" stroke-width="10"/>
+
+  <path d="M214 173H273C307 173 332 197 332 228C332 257 310 279 280 282L340 339H300L245 286H214V339H182V173H214ZM214 259H270C286 259 300 247 300 230C300 213 287 201 270 201H214V259Z" fill="url(#bg)"/>
+  <rect x="162" y="360" width="188" height="10" rx="5" fill="url(#bg)"/>
+</svg>

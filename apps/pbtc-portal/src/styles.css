@@ -1,0 +1,494 @@
+:root {
+  --bg: #060313;
+  --panel: #0e0a25;
+  --panel-border: #3a1f78;
+  --text: #f9f4ff;
+  --subtle: #c8bcff;
+  --pulse: #ff2fae;
+  --pulse-2: #1edcff;
+  --ok: #87ffe1;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+:focus-visible {
+  outline: 2px solid #9ceeff;
+  outline-offset: 2px;
+}
+
+.skip-link {
+  position: absolute;
+  left: 12px;
+  top: -40px;
+  background: #120b35;
+  color: #ffffff;
+  border: 1px solid #5a36b3;
+  border-radius: 8px;
+  padding: 8px 12px;
+  text-decoration: none;
+  z-index: 1000;
+}
+
+.skip-link:focus {
+  top: 12px;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  font-family: Inter, Segoe UI, Arial, sans-serif;
+  color: var(--text);
+  background:
+    radial-gradient(circle at 12% 8%, rgba(255, 47, 174, 0.28) 0%, rgba(255, 47, 174, 0) 42%),
+    radial-gradient(circle at 85% 82%, rgba(30, 220, 255, 0.22) 0%, rgba(30, 220, 255, 0) 45%),
+    radial-gradient(circle at top, #180a43 0%, var(--bg) 46%);
+}
+
+.app {
+  max-width: 1080px;
+  margin: 0 auto;
+  padding: 34px 20px 48px;
+}
+
+.hero,
+.panel,
+.metric-card {
+  background: linear-gradient(180deg, #140e35 0%, var(--panel) 100%);
+  border: 1px solid var(--panel-border);
+  border-radius: 14px;
+  box-shadow: 0 10px 34px rgba(6, 3, 19, 0.45);
+}
+
+.brand-lockup {
+  margin-bottom: 10px;
+}
+
+.brand-logo {
+  width: min(360px, 100%);
+  height: auto;
+  display: block;
+}
+
+.hero {
+  padding: 28px;
+}
+
+.badge {
+  display: inline-block;
+  padding: 6px 12px;
+  border-radius: 999px;
+  background: rgba(255, 47, 174, 0.2);
+  color: #ffd0ef;
+  margin: 0 0 12px;
+  font-size: 12px;
+  letter-spacing: 0.6px;
+  text-transform: uppercase;
+  font-weight: 700;
+}
+
+h1 {
+  margin: 0 0 8px;
+  font-size: 44px;
+  line-height: 1.08;
+  letter-spacing: -0.5px;
+}
+
+.subtitle {
+  margin: 0;
+  color: var(--subtle);
+  line-height: 1.55;
+  max-width: 760px;
+}
+
+.hero-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 18px;
+}
+
+.wallet-meta {
+  margin: 10px 0 0;
+  color: var(--subtle);
+  font-size: 13px;
+}
+
+.wallet-error {
+  margin: 10px 0 0;
+  color: #ff9eb0;
+  font-size: 13px;
+}
+
+.primary,
+.secondary {
+  border-radius: 10px;
+  padding: 11px 16px;
+  border: 1px solid transparent;
+  font-weight: 600;
+  text-decoration: none;
+  transition: transform 140ms ease, box-shadow 180ms ease, border-color 180ms ease, color 180ms ease;
+}
+
+.primary {
+  background: linear-gradient(90deg, var(--pulse), var(--pulse-2));
+  color: white;
+  box-shadow: 0 0 20px rgba(255, 47, 174, 0.35);
+}
+
+.primary:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 0 26px rgba(30, 220, 255, 0.38);
+}
+
+.primary:disabled {
+  opacity: 0.65;
+}
+
+.secondary {
+  border-color: var(--panel-border);
+  color: var(--pulse-2);
+}
+
+.secondary:hover,
+.contract-table a:hover {
+  transform: translateY(-1px);
+  border-color: #5a36b3;
+  color: #9ceeff;
+}
+
+.metric-grid {
+  margin-top: 16px;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 12px;
+}
+
+.metric-card {
+  padding: 16px;
+}
+
+.metric-label {
+  margin: 0;
+  color: var(--subtle);
+  font-size: 13px;
+}
+
+.metric-value {
+  margin: 10px 0;
+  font-size: 26px;
+  font-weight: 700;
+}
+
+.metric-source {
+  margin: 0;
+  color: #9f90d9;
+  font-size: 12px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.panel {
+  margin-top: 16px;
+  padding: 20px;
+}
+
+.panel h2 {
+  margin-top: 0;
+}
+
+.panel ol {
+  margin: 0;
+  color: var(--subtle);
+}
+
+.bridge-actions .subtitle {
+  margin-bottom: 14px;
+}
+
+.action-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 12px;
+}
+
+.action-card {
+  border: 1px solid var(--panel-border);
+  border-radius: 12px;
+  padding: 14px;
+  background: rgba(14, 12, 31, 0.55);
+}
+
+.action-card h3 {
+  margin-top: 0;
+}
+
+.action-card label {
+  display: grid;
+  gap: 6px;
+  margin-bottom: 10px;
+  color: var(--subtle);
+  font-size: 13px;
+}
+
+.action-card input {
+  background: #0e0a20;
+  border: 1px solid var(--panel-border);
+  color: var(--text);
+  border-radius: 8px;
+  padding: 10px;
+}
+
+.action-card input:focus-visible {
+  border-color: #9ceeff;
+  box-shadow: 0 0 0 2px rgba(156, 238, 255, 0.2);
+}
+
+.action-card .primary {
+  width: 100%;
+  display: inline-flex;
+  justify-content: center;
+}
+
+.status-box {
+  margin-top: 10px;
+  border: 1px solid #42258f;
+  background: #0d0a20;
+  border-radius: 10px;
+  padding: 12px;
+}
+
+.status-box p {
+  margin: 4px 0;
+  font-size: 13px;
+  color: #d7cdff;
+  word-break: break-word;
+}
+
+.note {
+  margin: 14px 0 0;
+  color: #d0c6ff;
+}
+
+.note strong {
+  color: var(--ok);
+}
+
+.helper-text {
+  margin: 10px 0 0;
+  color: #d9ccff;
+  font-size: 13px;
+}
+
+.metric-error {
+  grid-column: 1 / -1;
+  margin-top: 0;
+}
+
+.status-pill {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.4px;
+  text-transform: uppercase;
+  border: 1px solid transparent;
+}
+
+.status-healthy {
+  color: #d7fff4;
+  background: rgba(41, 231, 180, 0.2);
+  border-color: rgba(41, 231, 180, 0.55);
+}
+
+.status-unhealthy {
+  color: #ffd7f0;
+  background: rgba(255, 47, 174, 0.2);
+  border-color: rgba(255, 47, 174, 0.55);
+}
+
+.brand-footer {
+  margin-top: 16px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 2px;
+}
+
+.brand-mark {
+  width: 42px;
+  height: 42px;
+  border-radius: 10px;
+  box-shadow: 0 0 14px rgba(30, 220, 255, 0.28);
+}
+
+.table-wrap {
+  overflow-x: auto;
+}
+
+.contract-table {
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 700px;
+}
+
+.contract-table th,
+.contract-table td {
+  border: 1px solid var(--panel-border);
+  padding: 10px;
+  text-align: left;
+  vertical-align: top;
+  font-size: 13px;
+}
+
+.contract-table th {
+  color: var(--subtle);
+}
+
+.contract-table a {
+  color: var(--pulse-2);
+}
+
+/* ── Testnet Dashboard: Go/No-Go & Gate badges ──────────────────────── */
+
+.go-nogo-banner {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 18px 0 6px;
+}
+
+.go-nogo-label {
+  display: inline-flex;
+  align-items: center;
+  padding: 10px 28px;
+  border-radius: 12px;
+  font-size: 28px;
+  font-weight: 800;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  border: 2px solid transparent;
+}
+
+.overall-go {
+  color: #d7fff4;
+  background: rgba(41, 231, 180, 0.18);
+  border-color: rgba(41, 231, 180, 0.6);
+  box-shadow: 0 0 24px rgba(41, 231, 180, 0.2);
+}
+
+.overall-nogo {
+  color: #ffd7f0;
+  background: rgba(255, 47, 174, 0.18);
+  border-color: rgba(255, 47, 174, 0.6);
+  box-shadow: 0 0 24px rgba(255, 47, 174, 0.2);
+}
+
+.go-nogo-detail {
+  color: var(--subtle);
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.gate-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 3px 10px;
+  border-radius: 6px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  border: 1px solid transparent;
+}
+
+.gate-pass {
+  color: #d7fff4;
+  background: rgba(41, 231, 180, 0.2);
+  border-color: rgba(41, 231, 180, 0.55);
+}
+
+.gate-fail {
+  color: #ffd7f0;
+  background: rgba(255, 47, 174, 0.2);
+  border-color: rgba(255, 47, 174, 0.55);
+}
+
+.gate-pending {
+  color: #fff4d7;
+  background: rgba(255, 200, 47, 0.15);
+  border-color: rgba(255, 200, 47, 0.5);
+}
+
+.gate-table {
+  min-width: 560px;
+}
+
+@media (max-width: 720px) {
+  .app {
+    padding: 20px 14px 28px;
+  }
+
+  .hero {
+    padding: 20px;
+  }
+
+  h1 {
+    font-size: 34px;
+  }
+
+  .metric-value {
+    font-size: 22px;
+  }
+
+  .metric-source {
+    white-space: normal;
+    overflow: visible;
+    text-overflow: clip;
+  }
+
+  .hero-actions > .primary,
+  .hero-actions > .secondary {
+    width: 100%;
+    display: inline-flex;
+    justify-content: center;
+  }
+
+  .action-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .action-card {
+    padding: 12px;
+  }
+
+  .action-card input {
+    font-size: 16px;
+  }
+
+  .panel {
+    padding: 16px;
+  }
+
+  .brand-footer {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+
+  .contract-table {
+    min-width: 620px;
+  }
+
+  .brand-logo {
+    width: min(280px, 100%);
+  }
+}
