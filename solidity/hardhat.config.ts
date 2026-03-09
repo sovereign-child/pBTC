@@ -126,6 +126,30 @@ const config: HardhatUserConfig = {
         : undefined,
       tags: ["tenderly"],
     },
+    pulsechainTestnet: {
+      url: process.env.PULSECHAIN_TESTNET_RPC_URL || process.env.CHAIN_API_URL || "",
+      chainId: process.env.PULSECHAIN_TESTNET_CHAIN_ID
+        ? parseInt(process.env.PULSECHAIN_TESTNET_CHAIN_ID, 10)
+        : 943,
+      accounts: process.env.ACCOUNTS_PRIVATE_KEYS
+        ? process.env.ACCOUNTS_PRIVATE_KEYS.split(",")
+        : process.env.CONTRACT_OWNER_ACCOUNT_PRIVATE_KEY
+        ? [process.env.CONTRACT_OWNER_ACCOUNT_PRIVATE_KEY]
+        : undefined,
+    },
+    pulsechain: {
+      url: process.env.PULSECHAIN_RPC_URL || process.env.CHAIN_API_URL || "",
+      chainId: process.env.PULSECHAIN_CHAIN_ID
+        ? parseInt(process.env.PULSECHAIN_CHAIN_ID, 10)
+        : 369,
+      accounts: process.env.ACCOUNTS_PRIVATE_KEYS
+        ? process.env.ACCOUNTS_PRIVATE_KEYS.split(",")
+        : process.env.CONTRACT_OWNER_ACCOUNT_PRIVATE_KEY
+        ? [process.env.CONTRACT_OWNER_ACCOUNT_PRIVATE_KEY]
+        : undefined,
+      timeout: 300000,
+      httpHeaders: {},
+    },
     mainnet: {
       url: process.env.CHAIN_API_URL || "",
       chainId: 1,
@@ -183,6 +207,16 @@ const config: HardhatUserConfig = {
         "node_modules/@keep-network/random-beacon/artifacts",
         "node_modules/@keep-network/ecdsa/artifacts",
       ],
+      pulsechainTestnet: [
+        "node_modules/@threshold-network/solidity-contracts/deployments/development",
+        "node_modules/@keep-network/random-beacon/deployments/development",
+        "node_modules/@keep-network/ecdsa/deployments/development",
+      ],
+      pulsechain: [
+        "node_modules/@threshold-network/solidity-contracts/deployments/development",
+        "node_modules/@keep-network/random-beacon/deployments/development",
+        "node_modules/@keep-network/ecdsa/deployments/development",
+      ],
       mainnet: ["./external/mainnet"],
     },
   },
@@ -191,16 +225,22 @@ const config: HardhatUserConfig = {
     deployer: {
       default: 1,
       sepolia: 0,
+      pulsechainTestnet: 0,
+      pulsechain: 0,
       mainnet: 0, // "0x123694886DBf5Ac94DDA07135349534536D14cAf"
     },
     governance: {
       default: 2,
       sepolia: 0,
+      pulsechainTestnet: 0,
+      pulsechain: 0,
       mainnet: "0x9f6e831c8f8939dc0c830c6e492e7cef4f9c2f5f", // Threshold Council
     },
     chaosnetOwner: {
       default: 3,
       sepolia: 0,
+      pulsechainTestnet: 0,
+      pulsechain: 0,
       // Not used for mainnet deployment scripts of `@keepn-network/tbtc-v2`.
       // Used by `@keep-network/random-beacon` and `@keep-network/ecdsa`
       // when deploying `SortitionPool`s.
@@ -208,36 +248,50 @@ const config: HardhatUserConfig = {
     esdm: {
       default: 4,
       sepolia: 0,
+      pulsechainTestnet: 0,
+      pulsechain: 0,
       mainnet: "0x9f6e831c8f8939dc0c830c6e492e7cef4f9c2f5f", // Threshold Council
     },
     keepTechnicalWalletTeam: {
       default: 5,
       sepolia: 0,
+      pulsechainTestnet: 0,
+      pulsechain: 0,
       mainnet: "0xB3726E69Da808A689F2607939a2D9E958724FC2A",
     },
     keepCommunityMultiSig: {
       default: 6,
       sepolia: 0,
+      pulsechainTestnet: 0,
+      pulsechain: 0,
       mainnet: "0x19FcB32347ff4656E4E6746b4584192D185d640d",
     },
     treasury: {
       default: 7,
       sepolia: 0,
+      pulsechainTestnet: 0,
+      pulsechain: 0,
       mainnet: "0x87F005317692D05BAA4193AB0c961c69e175f45f", // Token Holder DAO
     },
     spvMaintainer: {
       default: 8,
       sepolia: 0,
+      pulsechainTestnet: 0,
+      pulsechain: 0,
       // We are not setting SPV maintainer for mainnet in deployment scripts.
     },
     v1Redeemer: {
       default: 10,
       sepolia: 0,
+      pulsechainTestnet: 0,
+      pulsechain: 0,
       mainnet: "0x8Bac178fA95Cb56D11A94d4f1b2B1F5Fc48A30eA",
     },
     redemptionWatchtowerManager: {
       default: 11,
       sepolia: 0,
+      pulsechainTestnet: 0,
+      pulsechain: 0,
       mainnet: "0x87F005317692D05BAA4193AB0c961c69e175f45f", // Token Holder DAO
     },
   },
@@ -256,6 +310,8 @@ const config: HardhatUserConfig = {
   etherscan: {
     apiKey: {
       mainnet: process.env.ETHERSCAN_API_KEY,
+      pulsechain: process.env.PULSESCAN_API_KEY,
+      pulsechainTestnet: process.env.PULSESCAN_TESTNET_API_KEY,
     },
     customChains: [
       {
@@ -264,6 +320,30 @@ const config: HardhatUserConfig = {
         urls: {
           apiURL: "https://api.etherscan.io/v2/api?chainid=1",
           browserURL: "https://etherscan.io",
+        },
+      },
+      {
+        network: "pulsechain",
+        chainId: 369,
+        urls: {
+          apiURL:
+            process.env.PULSECHAIN_SCAN_API_URL ||
+            "https://api.scan.pulsechain.com/api",
+          browserURL:
+            process.env.PULSECHAIN_SCAN_BROWSER_URL ||
+            "https://scan.pulsechain.com",
+        },
+      },
+      {
+        network: "pulsechainTestnet",
+        chainId: 943,
+        urls: {
+          apiURL:
+            process.env.PULSECHAIN_TESTNET_SCAN_API_URL ||
+            "https://api.scan.v4.testnet.pulsechain.com/api",
+          browserURL:
+            process.env.PULSECHAIN_TESTNET_SCAN_BROWSER_URL ||
+            "https://scan.v4.testnet.pulsechain.com",
         },
       },
     ],
