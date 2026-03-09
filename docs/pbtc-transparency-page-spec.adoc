@@ -1,0 +1,165 @@
+= pBTC Transparency Page Specification
+
+This document defines the required content, structure, and maintenance rules for
+the public pBTC transparency page.
+
+Goal:
+
+- Help users verify what they are using
+- Build trust through clear disclosures and verifiable links
+- Reduce support friction around bridge safety and status
+
+== Page objectives
+
+- Explain what pBTC is in plain language
+- Disclose the underlying protocol relationship (`Powered by TBTC infrastructure`)
+- Provide one-click verification paths (contracts, explorers, docs)
+- Surface current operational status and incident communication links
+
+== Required page sections
+
+=== 1) Hero + plain-language summary
+
+Must include:
+
+- One-line value proposition
+- One-line transparency disclosure
+- Primary CTA to bridge flow
+- Secondary CTA to technical docs
+
+Recommended copy:
+
+`pBTC brings Bitcoin liquidity to Pulsechain through a user-friendly experience.`
+
+`pBTC is a Pulsechain-branded integration powered by TBTC infrastructure. Always verify contract addresses below.`
+
+=== 2) How the bridge works (simple)
+
+Must include:
+
+- 3-step flow: deposit BTC -> verify confirmations -> receive/use pBTC
+- Typical timing expectations and caveats
+- Link to beginner guide and FAQ
+
+Do not include:
+
+- Unqualified guarantees about timing or outcomes
+
+=== 3) Contract and address verification
+
+Must include a structured table with:
+
+- Component name
+- Chain/network
+- Contract/token address
+- Explorer link
+- Last verified date
+- Owner/upgradeability note (if applicable)
+
+Recommended table schema:
+
+[cols="2,1,2,2,1,2",options="header"]
+|===
+|Component |Network |Address |Explorer |Verified |Notes
+|Bridge
+|Pulsechain
+|0x...
+|https://...
+|YYYY-MM-DD
+|Upgradeable (ProxyAdmin: ...)
+|===
+
+Maintenance rule:
+
+- Any contract/address update requires same-day transparency-page update.
+
+=== 4) Security and risk disclosures
+
+Must include:
+
+- Link to security policy and bug bounty path
+- Plain-language risk statement (smart contract, cross-chain, operational)
+- Statement that users should verify addresses before interacting
+
+Recommended copy block:
+
+`Using cross-chain infrastructure involves smart contract and operational risk. Review security materials, verify addresses, and start with small test transactions.`
+
+=== 5) Live status and incident communication
+
+Must include:
+
+- Current service status indicator (healthy/degraded/outage)
+- Last updated timestamp
+- Link to incident updates/log
+- Link to support/contact channel
+
+Operational guideline:
+
+- During incidents, first user-facing update within 30 minutes of confirmation.
+
+=== 6) Metrics snapshot (trust + usage)
+
+Must include:
+
+- TVL (or equivalent value locked metric)
+- Bridge starts/completions (rolling 24h or 7d)
+- Completion rate
+- Last refresh timestamp
+
+Data quality note:
+
+- Show source and refresh interval for each metric.
+
+=== 7) Governance and documentation links
+
+Must include:
+
+- pBTC branding policy
+- Go-to-market and KPI docs (internal reference okay)
+- Architecture/system docs
+- API docs if available
+
+== Content and copy guardrails
+
+- Use clear, non-promissory language.
+- Do not use guaranteed-return or guaranteed-performance claims.
+- Distinguish "brand" from "underlying protocol" in all trust-sensitive sections.
+- Prefer specific, verifiable claims over marketing adjectives.
+
+== Data and update ownership
+
+Suggested owners:
+
+- PMM: narrative and user-facing clarity
+- Engineering: contract/address accuracy
+- Ops/Reliability: status and incident updates
+- DevRel: docs link integrity and technical explanations
+
+Cadence:
+
+- Weekly review of links and metrics freshness
+- Immediate update on contract/address changes
+- Incident-driven updates as events unfold
+
+== QA checklist before publish
+
+- Address and explorer links are clickable and correct
+- Network names match wallet/explorer naming
+- All dates and timestamps are current
+- Disclosure language matches branding policy
+- Security and support links resolve correctly
+- Mobile view preserves table readability
+
+== Launch checklist
+
+- Link page from portal footer and bridge flow screens
+- Link page from docs index and onboarding guide
+- Announce page in campaign channels as trust artifact
+- Capture baseline metrics before/after launch
+
+== Optional enhancements
+
+- Add proof-of-reserves style visual summaries when feasible
+- Add contract ABI/source links for advanced users
+- Add downloadable JSON manifest of addresses and metadata

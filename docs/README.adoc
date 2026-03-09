@@ -32,6 +32,29 @@ anyone.
 TBTC v2 allows anyone to use Bitcoin in the expanding DeFi and Web3 universe
 without a third-party intermediary. 
 
+== Operational Runbooks
+
+- link:bridge-rebate-governance-deployment.adoc[Bridge Rebate Governance Deployment]
+- link:pulsechain-validator-sidecar-runbook.adoc[Pulsechain Validator Sidecar Runbook]
+- link:../ops/pulsechain-validator-sidecar/README.md[Pulsechain Validator Sidecar Starter Kit]
+- link:pbtc-branding-policy.adoc[pBTC Branding and Naming Policy]
+- link:pbtc-go-to-market-plan.adoc[pBTC Go-To-Market Plan]
+- link:pbtc-campaign-calendar-4-week.adoc[pBTC 4-Week Campaign Calendar]
+- link:pbtc-kpi-dashboard-spec.adoc[pBTC KPI Dashboard Specification]
+- link:pbtc-transparency-page-spec.adoc[pBTC Transparency Page Specification]
+- link:pbtc-go-live-checklist.adoc[pBTC Go-Live Checklist]
+- link:pbtc-go-live-checklist-template.adoc[pBTC Go-Live Checklist Template]
+- link:pbtc-go-live-checklist-testnet-draft.adoc[pBTC Go-Live Checklist Testnet Draft]
+- link:pbtc-go-live-checklist-mainnet-draft.adoc[pBTC Go-Live Checklist Mainnet Draft]
+- link:pbtc-testnet-onboarding-and-feedback.adoc[pBTC Testnet Onboarding and Feedback Operations Playbook]
+- link:pbtc-session-report-2026-03-04.adoc[pBTC Build Session Report (2026-03-04)]
+- link:pbtc-session-report-2026-03-04-executive-summary.adoc[pBTC Session Executive Summary (2026-03-04)]
+- link:../apps/pbtc-portal/README.md[pBTC Portal Frontend Starter]
+- link:repository-guide.adoc[Repository Guide]
+- link:documentation-governance.adoc[Documentation Governance]
+- link:engineering-readiness-checklist.adoc[Engineering Readiness Checklist]
+- https://github.com/keep-network/tbtc-v2/actions/workflows/pbtc-bridge-api.yml[image:https://github.com/keep-network/tbtc-v2/actions/workflows/pbtc-bridge-api.yml/badge.svg[pBTC Bridge API CI]]
+
 == Overview
 
 === Deposit

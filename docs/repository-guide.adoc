@@ -1,0 +1,173 @@
+= Repository Guide
+
+This guide is the fastest way to understand and work inside this monorepo.
+Use it as the onboarding index before diving into module-specific READMEs.
+
+== What this repository contains
+
+This repository hosts the tBTC v2 protocol codebase and related tooling:
+
+- Core protocol smart contracts and deployments
+- Cross-chain contract variants
+- TypeScript SDK
+- System and monitoring tools
+- Operator runbooks and starter kits
+- pBTC demo applications (frontend + bridge API)
+
+== Start here by goal
+
+=== I want to work on core protocol contracts
+
+- Start with link:../solidity/README.adoc[solidity/README.adoc]
+- Primary commands:
+  - `yarn install`
+  - `yarn build`
+  - `yarn test`
+  - `yarn test:integration`
+
+=== I want to work on the SDK
+
+- Start with link:../typescript/README.md[typescript/README.md]
+- Primary commands:
+  - `yarn install`
+  - `yarn build`
+  - `yarn test`
+
+=== I want to run bridge demo apps (pBTC)
+
+- Frontend: link:../apps/pbtc-portal/README.md[apps/pbtc-portal/README.md]
+- API: link:../apps/pbtc-bridge-api/README.md[apps/pbtc-bridge-api/README.md]
+
+Typical local flow:
+
+1. Start bridge API in `apps/pbtc-bridge-api`
+2. Set `VITE_BRIDGE_API_URL` in `apps/pbtc-portal`
+3. Start portal and test deposit/redeem UX against mock or upstream mode
+
+=== I want validator/operator runbooks
+
+- Main runbook: link:pulsechain-validator-sidecar-runbook.adoc[Pulsechain Validator Sidecar Runbook]
+- Starter kit: link:../ops/pulsechain-validator-sidecar/README.md[ops/pulsechain-validator-sidecar/README.md]
+
+=== I want full scenario/system testing
+
+- Start with link:../system-tests/README.adoc[system-tests/README.adoc]
+- Requires Bitcoin-side and EVM-side test setup
+
+== Repository map
+
+- link:../solidity/[solidity/] — core tBTC contracts and deployment scripts
+- link:../cross-chain/[cross-chain/] — chain-specific contract packages:
+  - `arbitrum/`, `base/`, `bob/`, `optimism/`, `polygon/`, `sei/`, `solana/`, `starknet/`, `sui/`
+- link:../typescript/[typescript/] — TypeScript SDK
+- link:../system-tests/[system-tests/] — system scenarios
+- link:../monitoring/[monitoring/] — event monitoring/telemetry component
+- link:../yearn/[yearn/] — Yearn-related contracts/strategies
+- link:../apps/[apps/] — pBTC app surfaces:
+  - `pbtc-portal/` (frontend)
+  - `pbtc-bridge-api/` (bridge action API)
+- link:../ops/[ops/] — operator starter kits and operational templates
+- link:./[docs/] — architecture docs, RFCs, and runbooks
+
+== Environment and toolchain
+
+Because this is a long-lived monorepo, modules can have different Node expectations.
+Always defer to the module README first.
+
+Baseline tools you will commonly need:
+
+- Node.js (module-dependent; several legacy modules still reference Node 14+)
+- Yarn classic (`1.x`) for most legacy modules
+- npm (used by `apps/pbtc-bridge-api`)
+- Docker (for some operator/monitoring workflows)
+
+Repository baseline:
+
+- Root `.nvmrc` uses `lts/hydrogen` as a default baseline.
+- Some modules require older/newer Node versions; follow module README first.
+
+Quick bootstrap:
+
+- Run `npm run dev:bootstrap` at repository root for a module command matrix.
+
+Potential Git dependency workaround (applies to some legacy transitive dependencies):
+
+`git config --global url."https://".insteadOf git://`
+
+== Common workflows
+
+=== Formatting (repo root)
+
+At repository root:
+
+- `npm run format`
+- `npm run format:fix`
+
+=== Contract smoke CI for bridge API
+
+Bridge API contract smoke tests are executed by:
+
+- local: `npm run test:contract` in `apps/pbtc-bridge-api`
+- CI workflow: `pbtc-bridge-api.yml`
+
+=== Typical change strategy
+
+1. Make targeted changes in one module.
+2. Run module-local build/test commands first.
+3. Run broader checks only if your change spans modules.
+
+== Documentation index
+
+- High-level protocol docs: link:README.adoc[docs/README.adoc]
+- Documentation governance: link:documentation-governance.adoc[Documentation Governance]
+- Engineering readiness checklist: link:engineering-readiness-checklist.adoc[Engineering Readiness Checklist]
+- Branding policy: link:pbtc-branding-policy.adoc[pBTC Branding and Naming Policy]
+- pBTC marketing plan: link:pbtc-go-to-market-plan.adoc[pBTC Go-To-Market Plan]
+- pBTC campaign calendar: link:pbtc-campaign-calendar-4-week.adoc[pBTC 4-Week Campaign Calendar]
+- pBTC KPI dashboard spec: link:pbtc-kpi-dashboard-spec.adoc[pBTC KPI Dashboard Specification]
+- pBTC transparency page spec: link:pbtc-transparency-page-spec.adoc[pBTC Transparency Page Specification]
+- pBTC go-live checklist: link:pbtc-go-live-checklist.adoc[pBTC Go-Live Checklist]
+- pBTC go-live worksheet: link:pbtc-go-live-checklist-template.adoc[pBTC Go-Live Checklist Template]
+- pBTC go-live testnet draft: link:pbtc-go-live-checklist-testnet-draft.adoc[pBTC Go-Live Checklist Testnet Draft]
+- pBTC go-live mainnet draft: link:pbtc-go-live-checklist-mainnet-draft.adoc[pBTC Go-Live Checklist Mainnet Draft]
+- pBTC testnet onboarding and feedback: link:pbtc-testnet-onboarding-and-feedback.adoc[pBTC Testnet Onboarding and Feedback Operations Playbook]
+- Bridge rebate deployment: link:bridge-rebate-governance-deployment.adoc[Bridge Rebate Governance Deployment]
+- Validator sidecar runbook: link:pulsechain-validator-sidecar-runbook.adoc[Pulsechain Validator Sidecar Runbook]
+
+== Suggested default labels by directory
+
+Use these as defaults when opening PRs. Final label choice should match the primary impact.
+
+[cols="2,1,1",options="header"]
+|===
+|Directory |Default `area:*` |Common `type:*`
+
+|`apps/pbtc-bridge-api`
+|`area:api`
+|`type:feature`, `type:fix`, `type:chore`, `type:breaking`
+
+|`apps/pbtc-portal`
+|`area:frontend`
+|`type:feature`, `type:fix`, `type:chore`, `type:breaking`
+
+|`solidity`, `cross-chain/*`, `yearn`
+|`area:contracts`
+|`type:feature`, `type:fix`, `type:chore`, `type:breaking`
+
+|`ops`, `monitoring`, operational runbooks
+|`area:ops`
+|`type:feature`, `type:fix`, `type:chore`
+
+|`docs`, `README*`, `CONTRIBUTING*`
+|`area:docs`
+|`type:feature`, `type:fix`, `type:chore`
+|===
+
+== If you are new to this repo
+
+Recommended order:
+
+1. Read link:../README.adoc[README.adoc]
+2. Read this guide end-to-end
+3. Pick one module and follow that module's README exactly
+4. Open small PRs with module-scoped changes first

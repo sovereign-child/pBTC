@@ -1,0 +1,188 @@
+= pBTC Go-To-Market Plan
+
+This document defines a practical plan to grow pBTC adoption while keeping
+technical transparency and user trust central.
+
+== Objectives
+
+Primary goals for the next 90 days:
+
+- Increase qualified awareness of pBTC on Pulsechain
+- Improve bridge-start to bridge-complete conversion
+- Grow repeat usage and partner integrations
+- Maintain transparent messaging about TBTC-powered infrastructure
+
+== Positioning and narrative
+
+Core position:
+
+- `pBTC` is the Pulsechain-branded user experience
+- It is powered by TBTC bridge infrastructure and operator security
+
+Messaging pillars:
+
+- Trust through transparency (contracts, audits, explorer links)
+- Utility (use BTC liquidity in Pulsechain DeFi)
+- Simplicity (clear bridge flow and status visibility)
+- Reliability (observable uptime and incident communication)
+
+== Audience segments
+
+=== Retail BTC holders (first-time bridgers)
+
+Needs:
+
+- Safety explanations in plain language
+- Step-by-step bridge walkthrough
+- Clear fee and timing expectations
+
+Best channels:
+
+- Short educational videos
+- X threads and visuals
+- Wallet/community partner guides
+
+=== DeFi power users
+
+Needs:
+
+- Liquidity depth and integrations
+- Real-time metrics (TVL, volume, completion rate)
+- Advanced transparency page with contract details
+
+Best channels:
+
+- DEX and protocol partner announcements
+- Technical blog posts
+- Community AMAs
+
+=== Integrators and ecosystem teams
+
+Needs:
+
+- Stable API/SDK and docs
+- Integration runbook and support path
+- Co-marketing opportunities
+
+Best channels:
+
+- Direct BD outreach
+- Integration playbooks
+- Joint launch content
+
+== Trust and compliance guardrails
+
+- Avoid guaranteed-return language or profit promises.
+- Avoid wording that can be interpreted as investment advice.
+- Always disclose protocol dependencies where relevant: `Powered by TBTC infrastructure`.
+- Ensure addresses, symbols, and explorer links match on-chain values.
+- Keep risk disclosures current on app, docs, and campaign landing pages.
+
+== 90-day rollout plan
+
+=== Phase 1 (Weeks 1-3): credibility foundation
+
+- Publish a public transparency page (contracts, audits, security process)
+- Publish beginner bridge guide with screenshots and FAQ
+- Add status/uptime panel links to pBTC portal and docs
+- Launch one technical deep-dive article on bridge safety model
+
+Success signals:
+
+- Lower support questions per 100 bridge starts
+- Higher completion rate for first-time bridge attempts
+
+=== Phase 2 (Weeks 4-7): acquisition campaigns
+
+- Run a "First Bridge" campaign with a clear, low-friction onboarding flow
+- Coordinate KOL/community AMAs focused on safety + use cases
+- Launch partner co-marketing with at least 2 Pulsechain ecosystem apps
+- Publish weekly social proof dashboard snapshots (TVL, users, completion)
+
+Success signals:
+
+- Increased weekly bridge starts
+- Increased landing-page to wallet-connect conversion
+
+=== Phase 3 (Weeks 8-12): retention and ecosystem scale
+
+- Add lifecycle messaging: "what to do next with pBTC" in app/docs
+- Run re-engagement campaign for users with incomplete bridge attempts
+- Publish integration case studies with partners
+- Expand referral/community champion program
+
+Success signals:
+
+- Improved 7-day and 30-day repeat-usage rates
+- Increased partner-originated bridge volume
+
+== Channel strategy
+
+- Owned: docs, portal, blog, changelog, Discord
+- Earned: partner announcements, community spaces, media mentions
+- Social: X, Telegram, Discord updates with consistent weekly cadence
+- Field/community: AMAs, office hours, integration workshops
+
+Cadence recommendation:
+
+- 3-5 social posts per week
+- 1 educational long-form post per week
+- 1 live community session every 2 weeks
+
+== Campaign content system
+
+Use a repeatable content mix each week:
+
+- One educational piece (how bridge works)
+- One proof piece (metrics/uptime/security progress)
+- One use-case story (what users can do with pBTC)
+- One product update (new integration, fix, or UX improvement)
+
+== KPI framework
+
+Track weekly and monthly:
+
+- Awareness: landing sessions, social reach, share of voice
+- Activation: wallet connects, bridge starts
+- Conversion: bridge completion rate, time-to-completion
+- Retention: 7-day and 30-day repeat bridge users
+- Ecosystem: number of active integrations, partner-sourced volume
+- Trust: support ticket rate, incident count, mean time to communication
+
+== Reporting and ownership
+
+Suggested owners:
+
+- Product marketing lead: campaign calendar and messaging
+- Developer relations lead: integration content and technical AMAs
+- Operations/reliability lead: trust metrics and incident communication
+
+Weekly operating rhythm:
+
+- Monday: KPI review + campaign planning
+- Wednesday: content and partner sync
+- Friday: retrospective + next-week adjustments
+
+== Immediate next actions (next 14 days)
+
+- Create the transparency page and link it from portal footer
+- Publish the beginner bridge guide + FAQ
+- Create KPI dashboard baseline from current metrics
+- Finalize 4-week content calendar with owners
+- Schedule first partner AMA and first integration announcement
+
+Execution docs:
+
+- link:pbtc-campaign-calendar-4-week.adoc[pBTC 4-Week Campaign Calendar]
+- link:pbtc-kpi-dashboard-spec.adoc[pBTC KPI Dashboard Specification]
+- link:pbtc-transparency-page-spec.adoc[pBTC Transparency Page Specification]
+
+== Appendix: messaging templates
+
+=== One-line elevator pitch
+
+`pBTC brings Bitcoin liquidity to Pulsechain through a user-friendly experience powered by TBTC infrastructure.`
+
+=== Transparency disclosure snippet
+
+`pBTC is a Pulsechain-branded integration. Underlying bridge contracts and operators follow TBTC protocol infrastructure; always verify contract addresses in our transparency page.`

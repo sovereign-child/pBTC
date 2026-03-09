@@ -1,0 +1,146 @@
+= pBTC 4-Week Campaign Calendar
+
+This calendar operationalizes the go-to-market strategy into weekly execution.
+Use it as the source of truth for upcoming campaigns, owners, and deliverables.
+
+== How to use
+
+- Keep one owner per deliverable.
+- Publish status updates each Friday.
+- Move unfinished items to the next week with explicit reason.
+
+== Team roles
+
+- Product Marketing (PMM): messaging, campaign management, landing pages
+- Developer Relations (DevRel): technical content, integrations, AMAs
+- Community (CM): social distribution, Discord/Telegram, community events
+- Design (Design): visual assets and campaign creatives
+- Ops/Reliability (Ops): trust metrics, status updates, incident comms
+
+== Weekly goals
+
+- Week 1: launch trust baseline content
+- Week 2: launch first-bridge acquisition campaign
+- Week 3: ecosystem amplification with partners
+- Week 4: optimization and retention push
+
+== Week 1: trust baseline
+
+Theme: "Transparent and safe bridge onboarding"
+
+Deliverables:
+
+- Publish transparency page (contracts, explorer links, disclosures) — Owner: PMM + Ops
+- Publish beginner guide + FAQ — Owner: DevRel
+- Publish one technical explainer (bridge safety model) — Owner: DevRel
+- Publish campaign creative set (hero, social cards, short clip) — Owner: Design
+- Announce weekly KPI snapshot cadence — Owner: CM
+
+Distribution:
+
+- Social posts: 4
+- Long-form posts: 1
+- Community sessions: 0
+
+Exit criteria:
+
+- Transparency page live and linked from portal/docs
+- Beginner guide published and shareable
+
+== Week 2: first-bridge acquisition
+
+Theme: "Your first pBTC bridge in minutes"
+
+Deliverables:
+
+- Launch "First Bridge" campaign landing page — Owner: PMM
+- Publish short bridge walkthrough video — Owner: DevRel + Design
+- Launch wallet-connect to bridge-start CTA sequence — Owner: PMM
+- Run one live onboarding session (Discord/X space) — Owner: CM + DevRel
+- Publish partner quote/endorsement card — Owner: CM
+
+Distribution:
+
+- Social posts: 5
+- Long-form posts: 1
+- Community sessions: 1
+
+Exit criteria:
+
+- Campaign landing page live
+- One full onboarding live session completed
+
+== Week 3: ecosystem amplification
+
+Theme: "What you can do with pBTC"
+
+Deliverables:
+
+- Publish 2 partner integration spotlights — Owner: DevRel + PMM
+- Publish use-case article (trading, LP, collateral examples) — Owner: PMM
+- Launch co-marketing posts with partner teams — Owner: CM
+- Publish KPI dashboard snapshot thread — Owner: Ops + CM
+- Run partner AMA — Owner: DevRel + CM
+
+Distribution:
+
+- Social posts: 5
+- Long-form posts: 1
+- Community sessions: 1
+
+Exit criteria:
+
+- At least two partner mentions or cross-posts
+- One integration use-case page published
+
+== Week 4: optimization and retention
+
+Theme: "Keep using pBTC"
+
+Deliverables:
+
+- Publish lifecycle prompts in docs/app content — Owner: PMM
+- Launch incomplete-bridge re-engagement messages — Owner: PMM + CM
+- Publish month-end KPI report and lessons learned — Owner: Ops
+- Publish roadmap update for next month — Owner: PMM + DevRel
+- Review and refresh campaign creative set — Owner: Design
+
+Distribution:
+
+- Social posts: 4
+- Long-form posts: 1
+- Community sessions: 1
+
+Exit criteria:
+
+- Month-end report published
+- Next-month campaign backlog approved
+
+== Content templates (copy-ready)
+
+=== Educational post template
+
+- Hook: What problem pBTC solves
+- Body: 3-step walkthrough
+- CTA: Read the beginner guide
+- Trust line: `Powered by TBTC infrastructure`
+
+=== Proof post template
+
+- Hook: weekly status snapshot
+- Body: bridge starts, completion rate, incident status
+- CTA: view transparency page and dashboard
+
+=== Use-case post template
+
+- Hook: what to do after bridging
+- Body: partner workflow example
+- CTA: launch pBTC portal
+
+== Weekly review checklist
+
+- Were all planned assets shipped?
+- Which channel drove the most bridge starts?
+- Did completion rate improve versus prior week?
+- Which messages underperformed and should be retired?
+- What is the top experiment for next week?

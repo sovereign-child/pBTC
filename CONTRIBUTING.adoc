@@ -23,6 +23,8 @@ Before marking the PR as ready for review, make sure:
   integration tests].
 * Your changes have sufficient test coverage (e.g regression tests have
   been added for bug fixes, unit tests for new features)
+* Documentation is updated for user-visible behavior, API, workflow, or
+  configuration changes (see link:docs/documentation-governance.adoc[Documentation Governance])
 
 == Development Tooling
 

@@ -1,0 +1,215 @@
+= Pulsechain Validator Sidecar Runbook for TBTC
+
+== Goal
+
+This runbook describes a practical way to operate TBTC on Pulsechain/Pulsechain testnet
+by letting validator teams run a sidecar service that performs off-chain maintainer duties.
+
+It is designed for MVP rollout first, then progressive decentralization.
+
+== Starter Kit
+
+For fastest onboarding, use the copy-paste operator package:
+
+- `ops/pulsechain-validator-sidecar/README.md`
+- `ops/pulsechain-validator-sidecar/.env.example`
+- `ops/pulsechain-validator-sidecar/docker-compose.yml`
+- `ops/pulsechain-validator-sidecar/OPERATOR-CHECKLIST.md`
+
+This package is intentionally opinionated and minimal so validator teams can
+get to first successful run quickly.
+
+One-click onboarding entrypoints:
+
+- Windows: `ops/pulsechain-validator-sidecar/RUN-ONE-CLICK.cmd`
+- Linux/macOS: `ops/pulsechain-validator-sidecar/run-one-click.sh`
+
+One-click configure-only entrypoints:
+
+- Windows: `ops/pulsechain-validator-sidecar/CONFIGURE-ONLY.cmd`
+- Linux/macOS: `ops/pulsechain-validator-sidecar/scripts/configure.sh`
+
+During setup, validators are prompted for:
+
+- `PULSECHAIN_RPC_URL`
+- `ELECTRUM_URL`
+- `TRANSACTION_FEE_RECIPIENT_ADDRESS` (maintainer transaction fee reimbursement recipient)
+
+Operator handoff shortcut:
+
+- See `First 10 Minutes (operator handoff)` and `Quick troubleshooting` in
+  `ops/pulsechain-validator-sidecar/README.md`
+
+== What lives on Bitcoin vs Pulsechain
+
+=== Bitcoin testnet/mainnet
+
+Nothing is "deployed" to Bitcoin.
+
+Bitcoin is used for:
+
+- Deposit funding transactions.
+- Wallet sweep transactions.
+- Redemption transactions.
+- Transaction/header data that off-chain maintainers fetch and convert into SPV proofs.
+
+=== Pulsechain / Pulsechain testnet
+
+TBTC contracts deploy to Pulsechain, including:
+
+- `Bridge`
+- `LightRelay`
+- `Bank`
+- `TBTCVault`
+- `MaintainerProxy`
+- `LightRelayMaintainerProxy`
+- `RedemptionWatchtower`
+- `NativeBTCDepositor`
+- Governance and supporting contracts
+
+See deployment scripts in `solidity/deploy/` and Pulsechain network config in
+`solidity/hardhat.config.ts`.
+
+== Do we need 24/7 services?
+
+Short answer: yes for production-grade UX and safety.
+
+Recommended always-on services:
+
+- SPV maintainer loop (submits deposit sweep/redemption/moving funds proofs)
+- Light relay retarget loop
+- Wallet/watchtower loop (timeouts, wallet lifecycle triggers)
+- Observability/alerting
+
+If these are not always-on, the protocol still exists on-chain but liveness and user UX
+degrade (slower sweeps, delayed redemptions, stale relay, timeout risk).
+
+== Recommended architecture (validator sidecar)
+
+Use a sidecar model so validator software remains unchanged:
+
+- `validator-node` (existing Pulse validator)
+- `tbtc-sidecar` (new process/agent stack)
+- `electrum access` (self-hosted preferred, shared fallback)
+- `pulse rpc` (local or trusted dedicated endpoint)
+- `metrics + alerting` (Prometheus/Grafana + pager)
+
+Design rule: validator keys and maintainer keys MUST be different.
+
+== Roles and key separation
+
+Each operator team should maintain separate keys/accounts:
+
+- Validator key: consensus-only, never used by sidecar.
+- SPV maintainer key: authorized for SPV proxy actions.
+- Relay maintainer key: authorized for relay retarget actions.
+- Wallet maintainer key (optional per phase): wallet lifecycle callbacks.
+
+Operational best practice:
+
+- Keep maintainer keys in HSM or remote signer.
+- Per-action spending limits where possible.
+- Separate hot wallet funding account from authorization owner account.
+
+== Incentives model (recommended)
+
+Use two layers:
+
+1. Base gas reimbursement (already in design)
+
+- Authorize maintainers through `MaintainerProxy` and `LightRelayMaintainerProxy`.
+- Keep `ReimbursementPool` funded.
+- Tune gas offsets periodically via governance.
+
+2. Service bonus (operator program, off-chain accounting)
+
+- Add fixed monthly reward + performance multiplier.
+- Score by successful actions, latency SLA, and uptime.
+- Slash bonus (not stake) for missed critical windows.
+
+This gives a fast path now without changing contract logic.
+
+== SLA framework for validator sidecars
+
+Use a simple objective first:
+
+- SPV proof submission latency: p95 < 10 minutes after confirmation threshold.
+- Relay retarget freshness: no missed retarget window.
+- Sidecar availability: >= 99.5% monthly.
+- Failed tx retry policy: exponential backoff + max retry budget + alert.
+
+Add operator leaderboards monthly and publish scores transparently.
+
+== Pulsechain testnet rollout plan
+
+=== Phase 0: Foundation (1-2 weeks)
+
+- Deploy contracts to `pulsechainTestnet`.
+- Fund reimbursement pool.
+- Authorize 2-3 internal maintainer addresses.
+- Stand up one reference sidecar in your own infra.
+
+=== Phase 1: Partner validators (2-4 weeks)
+
+- Invite 3-5 validators to run sidecars.
+- Provide Docker Compose + env template + health checks.
+- Run shared on-call + incident channel.
+
+=== Phase 2: Program launch
+
+- Open enrollment for validator operators.
+- Move from allowlist-heavy to policy/SLA-driven participation.
+- Keep emergency governance powers but publish criteria for interventions.
+
+== Minimal operator bundle to provide
+
+Ship these artifacts to validator teams:
+
+- `docker-compose.yml` for sidecar stack
+- `.env.example` with required variables
+- `runbook.md` with incident steps
+- `alerts.yaml` with critical alert rules
+- `make testnet-smoke` command for preflight checks
+
+Mandatory envs for smoke/e2e testing:
+
+- `PULSECHAIN_TESTNET_RPC_URL`
+- `ELECTRUM_URL`
+- `CONTRACTS_DEPLOYMENT_EXPORT_FILE_PATH`
+- `WALLET_BITCOIN_WIF`
+- `DEPOSITOR_BITCOIN_WIF`
+
+== Security controls (must-have)
+
+- Principle of least privilege for maintainer addresses.
+- Weekly key-usage audit and rotation runbook.
+- RPC allowlists and request rate-limits.
+- Mandatory tx simulation before broadcast when feasible.
+- Circuit-breaker: governance can deauthorize malfunctioning maintainers quickly.
+
+== Governance parameters to review monthly
+
+- Gas offsets in maintainer proxies.
+- Reimbursement pool refill thresholds.
+- Maintainer authorization set.
+- Alert thresholds and escalation timing.
+
+== Known repository caveats
+
+- `solidity/package.json` references validator bootstrap scripts that may not be
+  present in all checkouts. Treat those as optional convenience scripts, not a
+  hard dependency for rollout.
+- `system-tests` currently need explicit network wiring for non-local networks.
+
+== Recommended MVP decision
+
+For fastest safe launch:
+
+- Keep all core contracts on Pulsechain testnet.
+- Use Bitcoin testnet for BTC-side activity.
+- Run 3+ independent validator sidecars with reimbursement enabled.
+- Start with off-chain bonus accounting before introducing any new on-chain
+  incentive contract.
+
+This gives an operationally real deployment path while minimizing protocol
+change risk.

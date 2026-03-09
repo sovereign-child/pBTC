@@ -1,0 +1,57 @@
+= pBTC Branding and Naming Policy
+
+== Decision
+
+Use `pBTC` as the product and user-facing brand.
+
+Do *not* hide the underlying protocol identity when it matters for user trust,
+contract verification, or explorer matching.
+
+== Recommended naming pattern
+
+- Marketing/UI primary label: `pBTC`
+- Technical subtitle (where relevant): `Powered by TBTC infrastructure`
+- Contract-level labels: use exact on-chain names/symbols as deployed
+
+== Why this matters
+
+- Users must be able to reconcile UI claims with on-chain contracts.
+- Explorer pages, ABIs, and token symbols may still reference TBTC naming.
+- Full replacement of protocol naming can look deceptive if contract metadata
+  still uses TBTC labels.
+
+== UX copy rules
+
+- Top-level app heading: `pBTC Portal`
+- Bridge actions: `Bridge BTC <-> Pulsechain`
+- Token references in dashboards:
+  - Prefer `pBTC` as display name
+  - Add info tooltip: `pBTC uses TBTC bridge infrastructure`
+- Legal/footer text:
+  - `pBTC is a Pulsechain-branded integration powered by TBTC contracts and
+    operators.`
+
+== Where TBTC should still be visible
+
+- Contract addresses page
+- Audit/security pages
+- ABI/developer docs
+- Any explorer-linked token or contract symbol
+
+== Where TBTC can be minimized
+
+- Hero/landing messaging
+- Campaign pages
+- Social graphics
+- General app navigation and labels
+
+== Color and visual system
+
+Use Pulsechain-first visual identity for UI theme while keeping technical names
+accurate in metadata and docs.
+
+== Non-negotiable transparency
+
+Never imply that protocol contracts are different from what is deployed on-chain.
+If an on-chain contract/token says TBTC, surface that exact value where users
+validate contracts and assets.

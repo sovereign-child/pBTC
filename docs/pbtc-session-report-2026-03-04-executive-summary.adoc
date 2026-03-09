@@ -1,0 +1,74 @@
+= pBTC Session Executive Summary (2026-03-04)
+
+== Summary
+
+This session moved pBTC from a functional prototype toward launch-grade operational readiness.
+The main outcome is stronger custody decentralization controls and clearer real-time transparency for users and operators.
+
+== What We Delivered
+
+=== 1) Custody decentralization safeguard before minting
+
+- Minting is now blocked unless a minimum active guardian count is met.
+- Guardian quorum is configurable and enforced at the bridge API layer.
+- If quorum is not met, mint initialization returns a clear policy error.
+
+Business effect:
+
+- Reduces the chance of mint activity proceeding under weak validator participation.
+
+=== 2) Automated guardian liveness reporting
+
+- Validator sidecar now includes an automatic heartbeat worker.
+- Setup scripts auto-populate sensible defaults to reduce operator friction.
+- Guardian liveness status is exposed in API health and status endpoints.
+
+Business effect:
+
+- Improves confidence that custody decentralization is active in real time.
+
+=== 3) Real-time network health visibility in frontend
+
+- Transparency page now displays meaningful health cards for mixed audiences (regular users + developers).
+- Added metrics include:
+  - mint readiness,
+  - guardian coverage,
+  - runtime/API reliability,
+  - pending queue depth,
+  - median completion times,
+  - stale guardian count.
+
+Business effect:
+
+- Better user trust through understandable status signals.
+- Better troubleshooting speed for engineering/operations.
+
+== Validation Status
+
+All key changes were validated during the session:
+
+- Bridge API contract smoke tests passed.
+- Bridge API and portal builds passed.
+- Sidecar compose configuration validated after heartbeat integration.
+
+== Current State
+
+The system now provides an enforceable minimum guardian threshold before minting and surfaces meaningful live health telemetry end-to-end (sidecar -> API -> frontend).
+
+== Remaining Gaps
+
+- Health metrics are currently in-memory and reset on API restart.
+- Guardian heartbeat is an operational liveness signal (not cryptographic proof by itself).
+- Full deployment reproducibility on Pulsechain testnet still requires final environment/toolchain normalization.
+
+== Recommended Next Priorities
+
+1. Persist health metrics and trend windows (5m/1h) for stability over restarts.
+2. Add alerting thresholds for quorum drop, stale guardian spikes, and latency/failure spikes.
+3. Run a formal testnet go-live drill using the published checklist and onboarding playbook.
+
+== References
+
+- Detailed technical report: `docs/pbtc-session-report-2026-03-04.adoc`
+- Transparency specification: `docs/pbtc-transparency-page-spec.adoc`
+- Testnet onboarding playbook: `docs/pbtc-testnet-onboarding-and-feedback.adoc`

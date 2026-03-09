@@ -1,0 +1,103 @@
+= pBTC Go-Live Checklist — Mainnet Draft
+
+This is a pre-filled mainnet worksheet with conservative default gating.
+Use it for launch planning and do not switch to `GO` until all critical
+production controls are verified.
+
+Source framework: link:pbtc-go-live-checklist.adoc[pBTC Go-Live Checklist]
+
+== Launch metadata
+
+- Launch environment: `mainnet`
+- Launch date/time: TBD
+- Launch coordinator: TBD
+- Incident commander: TBD
+- Rollback owner: TBD
+- Worksheet owner: TBD
+
+== Critical gate worksheet
+
+[cols="2,1,2,3",options="header"]
+|===
+|Gate |Status (`PASS`/`FAIL`) |Owner |Evidence / Notes
+
+|Contracts and addresses
+|FAIL
+|TBD
+|Mainnet contract registry, explorer links, and transparency table finalization pending.
+
+|Bridge API production readiness
+|FAIL
+|TBD
+|Production load test evidence, alert thresholds, and on-call handoff sign-off pending.
+
+|Portal readiness
+|PASS (provisional)
+|TBD
+|Portal build + trust UX path implemented; mainnet env configuration and final QA pending.
+
+|Validator sidecar readiness
+|FAIL
+|TBD
+|Need multi-operator production rehearsal with incident drill and reimbursement validation.
+
+|Observability and incident communications
+|FAIL
+|TBD
+|Need launch-window dashboards, pager escalation verification, and public status channel run-through.
+
+|Security and policy checks
+|FAIL
+|TBD
+|Need final security review sign-off, secrets scan evidence, and final disclosure approval.
+|===
+
+== Blocking failures
+
+- Gate: Contracts and addresses
+  - Failure detail: Final mainnet address freeze and explorer validation incomplete
+  - Owner: TBD
+  - ETA: TBD
+
+- Gate: Bridge API production readiness
+  - Failure detail: Production traffic rehearsal and SLO alert burn-in incomplete
+  - Owner: TBD
+  - ETA: TBD
+
+- Gate: Validator sidecar readiness
+  - Failure detail: Multi-validator production readiness drill incomplete
+  - Owner: TBD
+  - ETA: TBD
+
+- Gate: Observability and incident communications
+  - Failure detail: Incident channel, escalation tree, and status update rehearsal incomplete
+  - Owner: TBD
+  - ETA: TBD
+
+- Gate: Security and policy checks
+  - Failure detail: Final sign-off package incomplete
+  - Owner: TBD
+  - ETA: TBD
+
+== Rollback readiness worksheet
+
+- Status (`PASS`/`FAIL`): FAIL
+- Owner: TBD
+- Evidence: Pending rollback dry-run and approved communications template
+- Notes: Define maximum rollback decision window and owner authority.
+
+== Final go/no-go decision
+
+- Decision: `NO-GO` (current draft)
+- Decision timestamp: TBD
+- Decided by: TBD
+- Outstanding risks accepted (if any): none yet
+
+== Launch +24h verification worksheet
+
+- Status (`PASS`/`FAIL`): TBD
+- Owner: TBD
+- Error-rate summary: TBD
+- Completion-rate summary: TBD
+- Incident summary: TBD
+- Public update link: TBD

@@ -9,3 +9,7 @@ dist/
 yarn-error.log
 CLAUDE.md
 .claude/
+
+# Testnet environment (secrets)
+.env.testnet
+.env

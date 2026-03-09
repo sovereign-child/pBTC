@@ -39,6 +39,12 @@ anyone.
 tBTC v2 allows anyone to use Bitcoin in the expanding DeFi and Web3 universe
 without a third-party intermediary.
 
+== Start here
+
+- link:docs/repository-guide.adoc[Repository Guide] (recommended first read)
+- link:docs/README.adoc[Protocol and Architecture Docs]
+- link:CONTRIBUTING.adoc[Contribution Guide]
+
 toc::[]
 
 == Overview
@@ -65,7 +71,8 @@ This repository contains the following modules:
 - link:docs/[Documentation],
 - link:yearn/[Yearn vault smart contracts],
 - link:monitoring/[Monitoring tool],
-- link:cross-chain/[Cross-chain smart contracts].
+- link:cross-chain/[Cross-chain smart contracts],
+- link:apps/[pBTC applications (portal + bridge API)].
 
 Please refer module-level README for specific module's installation and
 usage instructions.

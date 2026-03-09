@@ -1,0 +1,175 @@
+= pBTC KPI Dashboard Specification
+
+This document defines the KPI framework, metric formulas, data sources, and
+reporting cadence for pBTC growth and trust operations.
+
+== Principles
+
+- Metrics should be actionable by an owner.
+- Definitions should stay stable month-over-month.
+- Every KPI should have a source and a data freshness target.
+
+== Dashboard views
+
+- Executive summary (weekly/monthly)
+- Funnel performance (awareness to conversion)
+- Retention and ecosystem growth
+- Trust and reliability health
+
+== KPI definitions
+
+=== Awareness
+
+- Landing sessions
+  - Definition: unique sessions on campaign/portal landing pages
+  - Source: web analytics (portal + campaign pages)
+  - Freshness: daily
+
+- Social reach
+  - Definition: sum of impressions across official channels
+  - Source: X/Discord/Telegram native analytics
+  - Freshness: daily
+
+=== Activation
+
+- Wallet connects
+  - Definition: count of successful wallet connection events
+  - Source: portal analytics event stream
+  - Freshness: near-real-time (<=15 minutes)
+
+- Bridge starts
+  - Definition: count of successful `POST /deposits/init` and `POST /redemptions/init`
+  - Source: bridge API logs/metrics
+  - Freshness: near-real-time (<=15 minutes)
+
+=== Conversion
+
+- Bridge completion rate
+  - Definition: completed bridge operations / bridge starts
+  - Source: bridge API status endpoints + lifecycle events
+  - Freshness: hourly
+
+- Median time to completion
+  - Definition: p50 time from bridge start to completed status
+  - Source: bridge API lifecycle timestamps
+  - Freshness: hourly
+
+=== Retention
+
+- 7-day repeat users
+  - Definition: users with >=2 bridge starts in rolling 7 days
+  - Source: wallet-address keyed event model
+  - Freshness: daily
+
+- 30-day repeat users
+  - Definition: users with >=2 bridge starts in rolling 30 days
+  - Source: wallet-address keyed event model
+  - Freshness: daily
+
+=== Ecosystem
+
+- Active integrations
+  - Definition: partner protocols with at least one tracked pBTC flow in last 30 days
+  - Source: partner registry + on-chain/app events
+  - Freshness: weekly
+
+- Partner-sourced volume
+  - Definition: bridge volume attributable to partner referral/integration source
+  - Source: attribution tags + bridge lifecycle data
+  - Freshness: daily
+
+=== Trust and reliability
+
+- Support ticket rate
+  - Definition: support tickets per 100 bridge starts
+  - Source: support tool + bridge starts metric
+  - Freshness: daily
+
+- Incident count
+  - Definition: incidents affecting bridge user experience in period
+  - Source: incident tracker / status updates
+  - Freshness: daily
+
+- Mean time to communication (MTTC)
+  - Definition: average time from incident detection to first user-facing communication
+  - Source: incident tracker timestamps
+  - Freshness: per incident
+
+== Funnel model
+
+Funnel stages:
+
+1. Landing session
+2. Wallet connect
+3. Bridge start
+4. Bridge complete
+5. Repeat bridge user
+
+Primary conversion rates:
+
+- Landing -> Wallet connect
+- Wallet connect -> Bridge start
+- Bridge start -> Bridge complete
+- Bridge complete -> Repeat user (7d/30d)
+
+== Targets (initial baseline quarter)
+
+Use these as starting goals until real baseline data stabilizes:
+
+- Landing -> wallet connect: >= 20%
+- Wallet connect -> bridge start: >= 25%
+- Bridge start -> bridge complete: >= 80%
+- 7-day repeat rate: >= 15%
+- Support ticket rate: <= 3 per 100 bridge starts
+
+== Event instrumentation requirements
+
+Portal events (minimum):
+
+- `page_view`
+- `wallet_connect_success`
+- `bridge_form_submitted`
+- `bridge_status_viewed`
+- `bridge_completed_viewed`
+
+Bridge API events (minimum):
+
+- `deposit_init_success`
+- `deposit_status_transition`
+- `redemption_init_success`
+- `redemption_status_transition`
+- `api_error_by_code`
+
+Attribution fields:
+
+- `campaign_id`
+- `source_channel`
+- `partner_id` (optional but recommended)
+
+== Data quality checks
+
+- Event volume anomaly detection (day-over-day and week-over-week)
+- Missing attribution rate by source
+- Duplicate event rate
+- API metric/log parity checks for bridge starts and completions
+
+== Reporting cadence
+
+- Daily: ops health and conversion monitor
+- Weekly: KPI review and campaign adjustment
+- Monthly: strategy review and budget reallocation
+
+== Ownership
+
+- PMM: awareness, activation, campaign attribution quality
+- DevRel: integration and partner-sourced growth
+- Ops: reliability/trust KPIs and incident metrics
+- Engineering: instrumentation completeness and data correctness
+
+== Implementation checklist
+
+- Define event schema in one place and version it
+- Add portal instrumentation for funnel events
+- Add bridge API metric exports for start/completion transitions
+- Build dashboard with executive + funnel + trust tabs
+- Run first weekly KPI review and set adjusted targets

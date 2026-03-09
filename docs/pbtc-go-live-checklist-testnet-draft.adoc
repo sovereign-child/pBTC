@@ -1,0 +1,96 @@
+= pBTC Go-Live Checklist — Testnet Draft
+
+This is a pre-filled testnet worksheet based on current repository state and
+recent local validation results. Update owners and evidence links before final
+launch-room use.
+
+Source framework: link:pbtc-go-live-checklist.adoc[pBTC Go-Live Checklist]
+
+== Launch metadata
+
+- Launch environment: `testnet`
+- Launch date/time: TBD
+- Launch coordinator: TBD
+- Incident commander: TBD
+- Rollback owner: TBD
+- Worksheet owner: TBD
+
+== Critical gate worksheet
+
+[cols="2,1,2,3",options="header"]
+|===
+|Gate |Status (`PASS`/`FAIL`) |Owner |Evidence / Notes
+
+|Contracts and addresses
+|FAIL
+|TBD
+|Pending final address freeze + explorer verification + transparency table finalization.
+
+|Bridge API production readiness
+|PASS (provisional)
+|TBD
+|Recent local checks passed: `npm run build`, `npm run test:contract`, `/health` returned `ok: true`.
+
+|Portal readiness
+|PASS (provisional)
+|TBD
+|Recent local check passed: `apps/pbtc-portal` build (`npm run build`). Transparency/status UI present.
+
+|Validator sidecar readiness
+|PASS (provisional)
+|TBD
+|One-click + configure-only flows implemented and validated for required fee recipient configuration.
+
+|Observability and incident communications
+|FAIL
+|TBD
+|Pending dashboard sign-off, on-call schedule confirmation, and incident channel drill.
+
+|Security and policy checks
+|PASS (provisional)
+|TBD
+|Security links and disclosures are present; secrets handling improved (`.env` + setup summary ignored in sidecar).
+|===
+
+== Blocking failures
+
+- Gate: Contracts and addresses
+  - Failure detail: Final testnet address registry and explorer links not yet approved
+  - Owner: TBD
+  - ETA: TBD
+
+- Gate: Observability and incident communications
+  - Failure detail: Launch window on-call + incident comms drill incomplete
+  - Owner: TBD
+  - ETA: TBD
+
+== Rollback readiness worksheet
+
+- Status (`PASS`/`FAIL`): FAIL
+- Owner: TBD
+- Evidence: Pending rollback runbook dry-run and artifact snapshot confirmation
+- Notes: Define explicit portal/API rollback command path and launch channel message template.
+
+== Final go/no-go decision
+
+- Decision: `NO-GO` (current draft)
+- Decision timestamp: TBD
+- Decided by: TBD
+- Outstanding risks accepted (if any): none yet
+
+== Launch +24h verification worksheet
+
+- Status (`PASS`/`FAIL`): TBD
+- Owner: TBD
+- Error-rate summary: TBD
+- Completion-rate summary: TBD
+- Incident summary: TBD
+- Public update link: TBD
+
+== Current evidence snapshot (from recent local checks)
+
+- `apps/pbtc-bridge-api`: `npm run build` passed.
+- `apps/pbtc-bridge-api`: `npm run test:contract` passed.
+- Bridge API `/health` returned success in local test invocation.
+- `apps/pbtc-portal`: `npm run build` passed.
+- Validator sidecar configure/bootstrap scripts enforce required `TRANSACTION_FEE_RECIPIENT_ADDRESS`.

@@ -1,0 +1,184 @@
+= pBTC Testnet Onboarding and Feedback Operations Playbook
+
+This playbook explains how to onboard validators and users for testnet,
+collect actionable feedback, and monitor protocol health using logs,
+diagnostics, and state indicators.
+
+== Objectives
+
+- Validate end-to-end bridge behavior under realistic testnet conditions
+- Onboard enough validators to test decentralization and operational readiness
+- Drive user test traffic with structured scenarios
+- Collect telemetry and qualitative feedback in one loop
+
+== Testnet operating model
+
+- Duration: 2-4 week testnet campaign
+- Cadence: daily triage + weekly review
+- Channels:
+  - Validator ops channel (incident + runtime issues)
+  - User feedback channel (UX + transaction outcomes)
+  - Release channel (known issues + fixes + changelog)
+
+== Validator onboarding plan
+
+=== Phase A: recruit and prepare (Days 1-3)
+
+- Target 3-5 independent validator teams for first wave
+- Share starter package:
+  - `ops/pulsechain-validator-sidecar/README.md`
+  - `ops/pulsechain-validator-sidecar/OPERATOR-CHECKLIST.md`
+  - one-click scripts and configure-only path
+- Require each operator to submit masked setup summary (`setup-summary.txt`)
+
+Exit criteria:
+
+- At least 3 operators configured with valid fee recipient addresses
+- Preflight checks pass for all enrolled operators
+
+=== Phase B: dry-run and verification (Days 4-7)
+
+- Each operator runs one deposit and one redemption test scenario
+- Capture logs and timing at each lifecycle status transition
+- Validate reimbursement path and error handling
+
+Exit criteria:
+
+- No unresolved auth/revert loops
+- Known failure modes have documented fix paths
+
+=== Phase C: sustained test window (Week 2+)
+
+- Keep validator sidecars running continuously
+- Run scheduled scenario tests (normal, delayed confirmations, retry/circuit paths)
+- Publish weekly operator scorecard
+
+== User onboarding plan (testnet)
+
+=== User segments to invite
+
+- Existing community users (wallet-ready)
+- power users / integrators
+- first-time bridgers for UX friction findings
+
+=== User test campaign design
+
+- Campaign: "First Test Bridge"
+- Required tasks:
+  - Connect wallet
+  - Initiate one deposit test
+  - Initiate one redemption test
+  - Submit feedback form with TX IDs and screenshots
+
+Incentive options:
+
+- leaderboard recognition
+- testnet badge/role in community
+- raffle/allowlist for future programs
+
+== Feedback collection workflow
+
+== 1) Structured intake form
+
+Minimum required fields:
+
+- wallet address
+- operation type (deposit/redeem)
+- API/portal environment
+- observed status and timestamp
+- expected vs actual behavior
+- optional tx hash + screenshot
+
+== 2) Triage labels
+
+Use labels to route issues quickly:
+
+- `area:frontend`
+- `area:api`
+- `area:ops`
+- `type:bug`
+- `type:ux`
+- `severity:p1|p2|p3`
+
+== 3) Response SLA
+
+- P1: first response within 30 minutes
+- P2: first response within 4 hours
+- P3: first response within 1 business day
+
+== Logging and diagnostics (what to collect)
+
+=== Bridge API diagnostics
+
+Track and review:
+
+- `/health` snapshots (mode, retries, timeout config)
+- request count and error rate by endpoint
+- circuit breaker open events
+- status transition timings (deposit/redeem lifecycle)
+
+=== Portal diagnostics
+
+Track and review:
+
+- wallet connect success/failure
+- bridge start events and drop-off points
+- status polling success/failure
+- transparency page status freshness
+
+=== Validator sidecar diagnostics
+
+Track and review:
+
+- preflight pass/fail trends
+- container restart count
+- recurring auth/revert errors
+- RPC and Electrum endpoint reliability
+
+== Protocol state of health reporting
+
+Publish a daily testnet report with:
+
+- bridge starts vs completions
+- median time-to-completion
+- failed operations by root cause
+- active validators and uptime status
+- known incidents + mitigation status
+
+Weekly summary should include:
+
+- top recurring issues
+- fixes shipped
+- unresolved risks
+- go/no-go trajectory for next phase
+
+== Dashboards and minimum signals
+
+Minimum launch dashboard for testnet should include:
+
+- API health and error rate
+- bridge funnel (start -> complete)
+- validator sidecar health (running/restarting)
+- incident count and MTTC
+
+Status thresholds (starter defaults):
+
+- completion rate alert: < 80%
+- API error-rate alert: > 5% over 15 minutes
+- sidecar unhealthy alert: down > 5 minutes
+
+== Testnet exit criteria
+
+Move from testnet campaign to launch readiness only if:
+
+- completion rate stable above threshold for 7 consecutive days
+- no unresolved P1 incidents in final 7-day window
+- operator cohort meets uptime/SLA targets
+- top UX friction items have shipped fixes or approved mitigations
+- go-live checklist is `PASS` on all critical gates
+
+== Suggested weekly operating rhythm
+
+- Monday: KPI + incident review, prioritize fixes
+- Wednesday: validator sync + user feedback triage
+- Friday: publish state-of-protocol report and next-week plan

@@ -1,0 +1,55 @@
+= Engineering Readiness Checklist
+
+Use this checklist to keep contribution quality high and predictable as the repository evolves.
+
+== Branch protection (GitHub settings)
+
+Apply to `main`:
+
+- Require pull request before merging
+- Require approvals (recommended: 1+, adjust by risk level)
+- Dismiss stale approvals when new commits are pushed
+- Require conversation resolution before merge
+- Require linear history (optional, but recommended)
+- Restrict force pushes and deletions
+
+== Required status checks
+
+Require the checks that validate touched areas. At minimum:
+
+- `format`
+- `contracts` (for Solidity/core contract changes)
+- `typescript` (for SDK changes)
+- `monitoring` (for monitoring changes)
+- `system-tests` (when integration paths are touched)
+- `yearn` (for Yearn module changes)
+- `pbtc-bridge-api` (for `apps/pbtc-bridge-api` changes)
+- relevant `cross-chain-*` workflows for chain package changes
+
+== CODEOWNERS enforcement
+
+- Ensure CODEOWNERS is enabled for review requests
+- Keep ownership mappings aligned with active maintainers
+- Review ownership coverage quarterly
+
+== PR hygiene
+
+- Use the repository PR template
+- Apply at least one `area:*` and one `type:*` label
+- Include migration notes for breaking changes
+- Include docs updates for behavior/API/config/workflow changes
+
+== Release readiness
+
+Before announcing user-facing changes:
+
+- Confirm CI checks are green on `main`
+- Confirm docs and runbooks are updated
+- Confirm contract/API addresses and explorer links are accurate
+- Confirm monitoring/alerts are in place for newly exposed flows
+
+== Review cadence
+
+- Weekly: check flaky or frequently failing CI jobs
+- Monthly: review onboarding docs and setup commands
+- Per-release: run a release-readiness pass using this checklist

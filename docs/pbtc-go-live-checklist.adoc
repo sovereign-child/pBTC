@@ -1,0 +1,141 @@
+= pBTC Go-Live Checklist
+
+Use this checklist in launch review meetings to make go/no-go decisions with
+clear ownership and objective pass/fail criteria.
+
+Companion worksheet template:
+
+- link:pbtc-go-live-checklist-template.adoc[pBTC Go-Live Checklist Template]
+- link:pbtc-go-live-checklist-testnet-draft.adoc[pBTC Go-Live Checklist Testnet Draft]
+- link:pbtc-go-live-checklist-mainnet-draft.adoc[pBTC Go-Live Checklist Mainnet Draft]
+- link:pbtc-testnet-onboarding-and-feedback.adoc[pBTC Testnet Onboarding and Feedback Operations Playbook]
+
+== How to run this checklist
+
+- Assign one owner for each gate before launch day.
+- Mark every gate as `PASS` or `FAIL` with evidence links.
+- Any `FAIL` in critical gates means `NO-GO` until resolved.
+
+== Launch metadata
+
+- Launch environment: `testnet` / `mainnet`
+- Launch date/time:
+- Launch coordinator:
+- Incident commander:
+- Rollback owner:
+
+== Critical gates (must PASS)
+
+=== 1) Contracts and addresses
+
+Owner:
+Status: `PASS` / `FAIL`
+Evidence:
+
+Required checks:
+
+- Contract addresses are final and match deployment artifacts.
+- Explorer links resolve for Bridge/Bank/token contracts.
+- Transparency page contract table is updated and reviewed.
+
+=== 2) Bridge API production readiness
+
+Owner:
+Status: `PASS` / `FAIL`
+Evidence:
+
+Required checks:
+
+- `/health` endpoint returns expected mode and timestamp.
+- Contract smoke checks pass (`npm run test:contract`).
+- Timeout/retry/circuit settings are set for launch traffic.
+- Error-rate and latency alerts are active.
+
+=== 3) Portal readiness
+
+Owner:
+Status: `PASS` / `FAIL`
+Evidence:
+
+Required checks:
+
+- Production build passes (`npm run build`).
+- Branding + transparency links are visible and correct.
+- Bridge actions work against launch API environment.
+- Metrics and freshness timestamps render as expected.
+
+=== 4) Validator sidecar readiness
+
+Owner:
+Status: `PASS` / `FAIL`
+Evidence:
+
+Required checks:
+
+- One-click onboarding run completed by at least 3 operators.
+- `TRANSACTION_FEE_RECIPIENT_ADDRESS` configured and validated.
+- Sidecar preflight passes for each launch operator.
+- Operator handoff docs and troubleshooting references shared.
+
+=== 5) Observability and incident communications
+
+Owner:
+Status: `PASS` / `FAIL`
+Evidence:
+
+Required checks:
+
+- Dashboards include API health, bridge funnel, and operator health views.
+- Pager/on-call schedule is active for launch window.
+- Incident comms template is prepared (status + ETA + next update cadence).
+- Public status/update channel is defined and tested.
+
+=== 6) Security and policy checks
+
+Owner:
+Status: `PASS` / `FAIL`
+Evidence:
+
+Required checks:
+
+- Security policy links are present and accurate.
+- No secrets or `.env` artifacts are included in release artifacts.
+- Docs and disclosures match deployed behavior and names.
+
+== Go / No-Go rule
+
+- `GO` only if all critical gates are `PASS`.
+- Any unresolved critical `FAIL` => `NO-GO`.
+
+Final decision:
+
+- Decision: `GO` / `NO-GO`
+- Decision timestamp:
+- Decided by:
+- Notes:
+
+== Rollback readiness (must be prepared before GO)
+
+Owner:
+Status: `PASS` / `FAIL`
+Evidence:
+
+Required checks:
+
+- Previous stable portal artifact is available for fast rollback.
+- Bridge API previous known-good config/build is available.
+- Operator communication path for emergency pause/change is confirmed.
+- Rollback runbook location is documented and accessible.
+
+== Launch +24h verification
+
+Owner:
+Status: `PASS` / `FAIL`
+Evidence:
+
+Required checks:
+
+- Error rates remain within acceptable range.
+- Bridge completion rate is above launch threshold.
+- No unresolved P1/P2 incidents.
+- Public post-launch update published.

@@ -1,0 +1,82 @@
+= pBTC Go-Live Checklist Template (Fill-In Worksheet)
+
+Use this worksheet during launch reviews. Keep the source framework in
+`pbtc-go-live-checklist.adoc` unchanged and copy this file per launch event.
+
+== Launch metadata
+
+- Launch environment: `testnet` / `mainnet`
+- Launch date/time:
+- Launch coordinator:
+- Incident commander:
+- Rollback owner:
+- Worksheet owner:
+
+== Critical gate worksheet
+
+[cols="2,1,2,3",options="header"]
+|===
+|Gate |Status (`PASS`/`FAIL`) |Owner |Evidence / Notes
+
+|Contracts and addresses
+| 
+| 
+| 
+
+|Bridge API production readiness
+| 
+| 
+| 
+
+|Portal readiness
+| 
+| 
+| 
+
+|Validator sidecar readiness
+| 
+| 
+| 
+
+|Observability and incident communications
+| 
+| 
+| 
+
+|Security and policy checks
+| 
+| 
+| 
+|===
+
+== Blocking failures
+
+List any `FAIL` gates and assigned remediation owner:
+
+- Gate:
+  - Failure detail:
+  - Owner:
+  - ETA:
+
+== Rollback readiness worksheet
+
+- Status (`PASS`/`FAIL`):
+- Owner:
+- Evidence:
+- Notes:
+
+== Final go/no-go decision
+
+- Decision: `GO` / `NO-GO`
+- Decision timestamp:
+- Decided by:
+- Outstanding risks accepted (if any):
+
+== Launch +24h verification worksheet
+
+- Status (`PASS`/`FAIL`):
+- Owner:
+- Error-rate summary:
+- Completion-rate summary:
+- Incident summary:
+- Public update link:

@@ -1,0 +1,97 @@
+= Documentation Governance
+
+This page defines how documentation quality is maintained across the repository.
+
+== Scope
+
+Documentation governance applies to:
+
+- Repository-level docs (`README.adoc`, `CONTRIBUTING.adoc`, `docs/*`)
+- Module READMEs (`solidity`, `typescript`, `monitoring`, `system-tests`, `yearn`, `cross-chain/*`, `apps/*`)
+- Operational runbooks (`ops/*`, selected `docs/*` runbooks)
+
+== Ownership model
+
+- Repository docs owner: project maintainers
+- Module docs owner: module maintainers for each directory
+- Operational docs owner: operator/reliability maintainers
+
+When changing code behavior, the corresponding docs owner is responsible for
+ensuring documentation updates are included in the same PR whenever practical.
+
+== Update cadence
+
+- Per-change updates: required for behavior, API, env var, workflow, or command changes
+- Monthly review: recommended for runbooks and onboarding paths
+- Release review: required for externally consumed interfaces (SDK, contracts, APIs)
+
+== Required quality bar
+
+All documentation changes should be:
+
+- Accurate: commands and paths match the current repository
+- Minimal but complete: enough context to execute without guessing
+- Navigable: linked from an appropriate index page
+- Consistent: terminology and naming align with current project conventions
+
+== Documentation PR checklist
+
+Use this checklist in PR descriptions when docs are touched:
+
+- [ ] Updated affected docs for behavior/API/config changes
+- [ ] Verified commands and paths in modified docs
+- [ ] Added/updated links from the nearest index (`README` or `docs/README`)
+- [ ] Kept terminology consistent (tBTC vs pBTC where context requires)
+- [ ] Confirmed no stale references to removed files/workflows
+
+== Change categories and expectations
+
+=== Code-only internal refactor
+
+- Docs update is optional if no observable behavior changes.
+
+=== User-facing behavior or API change
+
+- Docs update is required in the same PR.
+
+=== New module/tool/workflow
+
+- Add module README and index links.
+- Include prerequisites, install, run, and verification steps.
+
+=== Incident/operations learnings
+
+- Update runbook docs within one follow-up PR after incident review.
+
+== PR label conventions
+
+Apply labels to improve triage and reviewer routing.
+
+=== Core labels
+
+- `area:docs` for documentation-only or docs-heavy changes
+- `area:api` for `apps/pbtc-bridge-api` contract, behavior, or schema changes
+- `area:frontend` for `apps/pbtc-portal` UI or client-side behavior changes
+- `area:contracts` for Solidity or on-chain deployment changes
+- `area:ops` for runbooks, sidecar operations, alerts, or reliability workflows
+
+=== Change-type labels
+
+- `type:feature` for new capabilities
+- `type:fix` for bug fixes
+- `type:chore` for maintenance/refactor work without behavior changes
+- `type:breaking` for backward-incompatible behavior or interface changes
+
+=== Label usage rules
+
+- Apply at least one `area:*` label and one `type:*` label.
+- Add `type:breaking` when migration notes are required in the PR body.
+- For mixed-scope PRs, choose the primary `area:*` label and list secondary impacts in PR notes.
+
+== Source of truth rules
+
+- Prefer module README for exact setup/run commands.
+- Prefer `docs/` for architectural and operational context.
+- Prefer CI workflow files for canonical automation behavior.
+
+When conflicts exist, fix docs in the same PR to restore a single source of truth.

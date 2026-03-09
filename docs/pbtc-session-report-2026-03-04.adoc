@@ -1,0 +1,153 @@
+= pBTC Build Session Report (2026-03-04)
+
+== Purpose
+
+This report captures the implementation work completed during the current build session,
+validation performed, current operational state, and the recommended next steps.
+It is intended as a handoff/reference artifact for future contributors.
+
+== Session Objectives
+
+Primary goals addressed in this session:
+
+- Improve launch readiness for pBTC bridge operations and user trust visibility.
+- Enforce custody decentralization safeguards before minting.
+- Improve validator onboarding and reduce operator setup friction.
+- Expand frontend transparency and health telemetry for both average users and developers.
+
+== What Was Implemented
+
+=== 1) Guardian quorum gate before minting
+
+Implemented an enforceable mint gate in the bridge API so BTC→pBTC mint initialization is blocked unless a minimum active guardian threshold is met.
+
+- Added config controls:
+  - `GUARDIAN_MIN_ACTIVE_FOR_MINT`
+  - `GUARDIAN_HEARTBEAT_TTL_MS`
+- Added guardian liveness endpoints:
+  - `POST /guardians/heartbeat`
+  - `GET /guardians/status`
+- Added health exposure:
+  - `GET /health` now includes guardian state.
+- Added explicit error for unmet quorum:
+  - `guardian_quorum_unmet` (HTTP 503)
+
+Impact:
+
+- Prevents minting when custody decentralization signals are below configured threshold.
+- Gives operators and users a clear, queryable quorum status.
+
+=== 2) Sidecar-based automatic guardian heartbeat
+
+Extended validator sidecar tooling so guardian liveness can be reported automatically.
+
+- Added heartbeat-related env defaults in sidecar `.env.example`.
+- Added `guardian-heartbeat` service to sidecar `docker-compose.yml`.
+- Updated configure scripts (PowerShell + shell) to auto-populate defaults such as `GUARDIAN_ID` and heartbeat endpoint.
+- Updated sidecar docs/checklist to include heartbeat verification steps.
+
+Impact:
+
+- Reduces manual operational burden.
+- Makes guardian liveness observable in near real time with minimal setup overhead.
+
+=== 3) Runtime bridge API telemetry for transparency
+
+Extended bridge API health telemetry with runtime and operation-level metrics.
+
+Added runtime fields (via `GET /health`):
+
+- Service runtime:
+  - `startedAt`, `uptimeMs`
+  - `totalRequests`, `totalFailures`
+- Per-operation metrics:
+  - request/success/failure counters
+  - last and average latency
+  - last success/error timestamps
+
+Added bridge-health metrics requested for frontend visibility:
+
+- `pendingQueueDepth`
+- `pendingDeposits`
+- `pendingRedemptions`
+- `medianDepositCompletionMs`
+- `medianRedemptionCompletionMs`
+- `staleGuardianCount`
+
+Impact:
+
+- Enables meaningful “is the network healthy?” indicators for end users.
+- Provides actionable diagnostics for developers/operators.
+
+=== 4) Transparency page UX and observability expansion
+
+Expanded `pBTC Transparency` page with clearer network health presentation:
+
+- Guardian quorum status and minting readiness.
+- API runtime reliability indicators.
+- New `Network Health` panel with compact summary cards:
+  - Mint readiness
+  - Guardian coverage
+  - API reliability
+  - Runtime uptime
+  - Pending queue depth
+  - Median completion times
+  - Stale guardians
+- Advanced expandable developer metrics table retained for deeper diagnostics.
+
+Impact:
+
+- Improves trust/clarity for average users.
+- Preserves deep operational visibility for advanced users and dev teams.
+
+== Validation Performed
+
+The following validations were run during the session and passed:
+
+- Bridge API contract smoke tests:
+  - `npm run test:contract`
+  - Included quorum-gating behavior checks and upstream failure/circuit checks.
+- Bridge API TypeScript build:
+  - via smoke test pipeline (`npm run build`).
+- Portal production build:
+  - `npm run build` in `apps/pbtc-portal` after each major UI update.
+- Sidecar compose config check:
+  - `docker compose --env-file .env.example config`
+  - Confirmed compose file validity after heartbeat worker addition.
+
+== Operational Outcome
+
+Current outcome of this session:
+
+- Mint requests can now be policy-gated based on active guardian liveness.
+- Guardian liveness can be reported automatically by sidecar operators.
+- Frontend transparency now includes actionable real-time health indicators for both user and developer audiences.
+- Documentation and onboarding materials were updated to support operator usage and future maintenance.
+
+== Known Constraints / Risks
+
+- Guardian heartbeat currently reflects API-observed liveness signals, not cryptographic proof of validator behavior.
+- Runtime medians/queue metrics are process-memory based in current API implementation (not persisted across restarts).
+- Full Pulsechain testnet Solidity deployment remains environment-dependent and may require dedicated toolchain normalization for deterministic reproduction.
+
+== Recommended Next Steps
+
+Priority sequence:
+
+1. Persist operational metrics (e.g., lightweight store) to survive API restarts.
+2. Add trend windows (e.g., 5m/1h) for queue depth, stale guardians, and completion times.
+3. Add alerts for:
+   - quorum below threshold,
+   - stale guardian spikes,
+   - rising failure/latency rates.
+4. Perform testnet launch drill using existing go-live checklist + onboarding playbook.
+5. Complete deployment reproducibility pass for Solidity/Pulsechain testnet.
+
+== Resume Guide
+
+When resuming work, start here:
+
+1. Verify bridge API health payload includes `guardians`, `runtime`, and `bridgeHealth` sections.
+2. Verify sidecar `guardian-heartbeat` container is running and posting successfully.
+3. Open transparency page and confirm health cards are populating from live API data.
+4. Execute `npm run test:contract` (bridge API) and `npm run build` (portal) before further changes.
