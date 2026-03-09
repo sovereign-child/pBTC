@@ -1,0 +1,146 @@
+###############################################################################
+# pBTC Testnet — Full Stack
+#
+# Brings up the entire pBTC testnet experience in one command:
+#   docker compose -f docker-compose.testnet.yml up --build
+#
+# Services:
+#   bridge-api    — mock bridge API (deposit/redeem lifecycle)
+#   portal        — pBTC web portal (React + Vite, served by nginx)
+#   monitor       — tBTC monitoring sidecar
+#   guardian-hb   — guardian heartbeat worker
+#
+# After startup:
+#   Portal:     http://localhost:8080
+#   Bridge API: http://localhost:3007/health
+###############################################################################
+
+name: pbtc-testnet
+
+services:
+  # ── Bridge API (mock mode — no chain dependencies) ──────────────────────
+  bridge-api:
+    build:
+      context: ./apps/pbtc-bridge-api
+      dockerfile: Dockerfile
+    image: pbtc-bridge-api:testnet
+    restart: unless-stopped
+    ports:
+      - "${BRIDGE_API_PORT:-3007}:3007"
+    environment:
+      PORT: "3007"
+      CORS_ORIGIN: "*"
+      BRIDGE_API_MODE: "${BRIDGE_API_MODE:-mock}"
+      GUARDIAN_MIN_ACTIVE_FOR_MINT: "${GUARDIAN_MIN_ACTIVE_FOR_MINT:-1}"
+      GUARDIAN_HEARTBEAT_TTL_MS: "${GUARDIAN_HEARTBEAT_TTL_MS:-120000}"
+      UPSTREAM_BRIDGE_API_URL: "${UPSTREAM_BRIDGE_API_URL:-}"
+      UPSTREAM_BRIDGE_API_KEY: "${UPSTREAM_BRIDGE_API_KEY:-}"
+      UPSTREAM_TIMEOUT_MS: "${UPSTREAM_TIMEOUT_MS:-10000}"
+      UPSTREAM_MAX_RETRIES: "${UPSTREAM_MAX_RETRIES:-2}"
+      UPSTREAM_RETRY_BASE_MS: "${UPSTREAM_RETRY_BASE_MS:-250}"
+      UPSTREAM_CIRCUIT_FAILURE_THRESHOLD: "${UPSTREAM_CIRCUIT_FAILURE_THRESHOLD:-5}"
+      UPSTREAM_CIRCUIT_OPEN_MS: "${UPSTREAM_CIRCUIT_OPEN_MS:-30000}"
+      RATE_LIMIT_WINDOW_MS: "${RATE_LIMIT_WINDOW_MS:-60000}"
+      RATE_LIMIT_MAX_REQUESTS: "${RATE_LIMIT_MAX_REQUESTS:-60}"
+    deploy:
+      resources:
+        limits:
+          memory: 256M
+          cpus: "0.50"
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:3007/health || exit 1"]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+
+  # ── Portal (static React app, testnet defaults) ────────────────────────
+  portal:
+    build:
+      context: ./apps/pbtc-portal
+      dockerfile: Dockerfile
+      args:
+        VITE_PULSECHAIN_CHAIN_ID: "${VITE_PULSECHAIN_CHAIN_ID:-943}"
+        VITE_PULSECHAIN_RPC_URL: "${VITE_PULSECHAIN_RPC_URL:-https://rpc.v4.testnet.pulsechain.com}"
+        VITE_PULSECHAIN_NETWORK_NAME: "${VITE_PULSECHAIN_NETWORK_NAME:-Pulsechain Testnet}"
+        VITE_PULSECHAIN_EXPLORER_BASE_URL: "${VITE_PULSECHAIN_EXPLORER_BASE_URL:-https://scan.v4.testnet.pulsechain.com}"
+        VITE_PBTC_TOKEN_ADDRESS: "${VITE_PBTC_TOKEN_ADDRESS:-}"
+        VITE_BANK_ADDRESS: "${VITE_BANK_ADDRESS:-}"
+        VITE_BRIDGE_ADDRESS: "${VITE_BRIDGE_ADDRESS:-}"
+        VITE_BTC_PRICE_USD: "${VITE_BTC_PRICE_USD:-95000}"
+        VITE_BRIDGE_API_URL: "${VITE_BRIDGE_API_URL:-http://localhost:3007}"
+        VITE_TVL_API_URL: "${VITE_TVL_API_URL:-}"
+    image: pbtc-portal:testnet
+    restart: unless-stopped
+    ports:
+      - "${PORTAL_PORT:-8080}:80"
+    deploy:
+      resources:
+        limits:
+          memory: 128M
+          cpus: "0.25"
+    depends_on:
+      bridge-api:
+        condition: service_healthy
+
+  # ── Monitoring sidecar ─────────────────────────────────────────────────
+  monitor:
+    build:
+      context: ./monitoring
+      dockerfile: Dockerfile
+    image: tbtc-v2-monitoring:testnet
+    restart: unless-stopped
+    environment:
+      ENVIRONMENT: "${ENVIRONMENT:-testnet}"
+      ETHEREUM_URL: "${PULSECHAIN_RPC_URL:-https://rpc.v4.testnet.pulsechain.com}"
+      ELECTRUM_URL: "${ELECTRUM_URL:-}"
+      DATA_DIR_PATH: "${DATA_DIR_PATH:-/mnt/data}"
+      TRANSACTION_FEE_RECIPIENT_ADDRESS: "${TRANSACTION_FEE_RECIPIENT_ADDRESS:-}"
+      LARGE_DEPOSIT_THRESHOLD_SAT: "${LARGE_DEPOSIT_THRESHOLD_SAT:-1000000000}"
+      LARGE_REDEMPTION_THRESHOLD_SAT: "${LARGE_REDEMPTION_THRESHOLD_SAT:-1000000000}"
+      SENTRY_DSN: "${SENTRY_DSN:-}"
+      DISCORD_WEBHOOK_URL: "${DISCORD_WEBHOOK_URL:-}"
+    command:
+      [
+        "sh",
+        "-lc",
+        "while true; do node .; sleep ${MONITOR_INTERVAL_SEC:-90}; done",
+      ]
+    volumes:
+      - monitor_data:/mnt/data
+    healthcheck:
+      test: ["CMD-SHELL", "test -d /mnt/data"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    deploy:
+      resources:
+        limits:
+          memory: 256M
+          cpus: "0.50"
+    profiles:
+      - full
+
+  # ── Guardian heartbeat worker ──────────────────────────────────────────
+  guardian-hb:
+    image: curlimages/curl:8.12.1
+    restart: unless-stopped
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    command:
+      [
+        "sh",
+        "-lc",
+        "while true; do payload=$$(printf '{\"guardianId\":\"%s\",\"version\":\"%s\"}' \"${GUARDIAN_ID:-testnet-guardian}\" \"${GUARDIAN_VERSION:-docker-testnet}\"); curl -sS -X POST -H 'content-type: application/json' -d \"$$payload\" \"http://bridge-api:3007/guardians/heartbeat\" >/dev/null && echo \"heartbeat ok\" || echo \"heartbeat failed\"; sleep ${GUARDIAN_HEARTBEAT_INTERVAL_SEC:-30}; done",
+      ]
+    deploy:
+      resources:
+        limits:
+          memory: 32M
+          cpus: "0.10"
+    depends_on:
+      bridge-api:
+        condition: service_healthy
+
+volumes:
+  monitor_data:

@@ -1,0 +1,78 @@
+###############################################################################
+# pBTC Testnet — Pre-built Images (no local build required)
+#
+# Usage:
+#   docker compose -f docker-compose.testnet.prebuilt.yml --env-file .env.testnet up -d
+#
+# Pulls pre-built images from GitHub Container Registry instead of building
+# locally. Faster startup for testers who just want to run the stack.
+###############################################################################
+
+name: pbtc-testnet
+
+services:
+  bridge-api:
+    image: ghcr.io/soverign-child/pbtc-bridge-api:testnet
+    restart: unless-stopped
+    ports:
+      - "${BRIDGE_API_PORT:-3007}:3007"
+    environment:
+      PORT: "3007"
+      CORS_ORIGIN: "*"
+      BRIDGE_API_MODE: "${BRIDGE_API_MODE:-mock}"
+      GUARDIAN_MIN_ACTIVE_FOR_MINT: "${GUARDIAN_MIN_ACTIVE_FOR_MINT:-1}"
+      GUARDIAN_HEARTBEAT_TTL_MS: "${GUARDIAN_HEARTBEAT_TTL_MS:-120000}"
+      UPSTREAM_BRIDGE_API_URL: "${UPSTREAM_BRIDGE_API_URL:-}"
+      UPSTREAM_BRIDGE_API_KEY: "${UPSTREAM_BRIDGE_API_KEY:-}"
+      UPSTREAM_TIMEOUT_MS: "${UPSTREAM_TIMEOUT_MS:-10000}"
+      UPSTREAM_MAX_RETRIES: "${UPSTREAM_MAX_RETRIES:-2}"
+      UPSTREAM_RETRY_BASE_MS: "${UPSTREAM_RETRY_BASE_MS:-250}"
+      UPSTREAM_CIRCUIT_FAILURE_THRESHOLD: "${UPSTREAM_CIRCUIT_FAILURE_THRESHOLD:-5}"
+      UPSTREAM_CIRCUIT_OPEN_MS: "${UPSTREAM_CIRCUIT_OPEN_MS:-30000}"
+      RATE_LIMIT_WINDOW_MS: "${RATE_LIMIT_WINDOW_MS:-60000}"
+      RATE_LIMIT_MAX_REQUESTS: "${RATE_LIMIT_MAX_REQUESTS:-60}"
+    deploy:
+      resources:
+        limits:
+          memory: 256M
+          cpus: "0.50"
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:3007/health || exit 1"]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+
+  portal:
+    image: ghcr.io/soverign-child/pbtc-portal:testnet
+    restart: unless-stopped
+    ports:
+      - "${PORTAL_PORT:-8080}:80"
+    deploy:
+      resources:
+        limits:
+          memory: 128M
+          cpus: "0.25"
+    depends_on:
+      bridge-api:
+        condition: service_healthy
+
+  guardian-hb:
+    image: curlimages/curl:8.12.1
+    restart: unless-stopped
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    command:
+      [
+        "sh",
+        "-lc",
+        "while true; do payload=$$(printf '{\"guardianId\":\"%s\",\"version\":\"%s\"}' \"${GUARDIAN_ID:-testnet-guardian}\" \"${GUARDIAN_VERSION:-docker-testnet}\"); curl -sS -X POST -H 'content-type: application/json' -d \"$$payload\" \"http://bridge-api:3007/guardians/heartbeat\" >/dev/null && echo \"heartbeat ok\" || echo \"heartbeat failed\"; sleep ${GUARDIAN_HEARTBEAT_INTERVAL_SEC:-30}; done",
+      ]
+    deploy:
+      resources:
+        limits:
+          memory: 32M
+          cpus: "0.10"
+    depends_on:
+      bridge-api:
+        condition: service_healthy
