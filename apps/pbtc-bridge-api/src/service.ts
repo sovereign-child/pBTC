@@ -1,5 +1,7 @@
 import { BridgeApiConfig } from "./config.js"
 import { BridgeApiError } from "./errors.js"
+import { log } from "./logger.js"
+import { recordLatency } from "./prometheus.js"
 import {
   BridgeProvider,
   createMockProvider,
@@ -145,12 +147,19 @@ export const createBridgeService = (config: BridgeApiConfig) => {
       metric.totalLatencyMs += elapsedMs
       metric.lastLatencyMs = elapsedMs
       metric.lastSuccessAt = new Date().toISOString()
+      recordLatency(operation, elapsedMs)
       return result
     } catch (error) {
       const elapsedMs = Date.now() - startedMs
       metric.failures += 1
       metric.lastLatencyMs = elapsedMs
       metric.lastErrorAt = new Date().toISOString()
+      recordLatency(operation, elapsedMs)
+      log.warn("operation failed", {
+        operation,
+        durationMs: elapsedMs,
+        error: error instanceof Error ? error.message : String(error),
+      })
       throw error
     }
   }

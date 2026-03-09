@@ -3,6 +3,8 @@ import cors from "cors"
 import express from "express"
 import { loadConfig } from "./config.js"
 import { BridgeApiError } from "./errors.js"
+import { log, requestLogger } from "./logger.js"
+import { httpRequestMiddleware, renderMetrics } from "./prometheus.js"
 import { createRateLimiter } from "./rate-limit.js"
 import { createBridgeService } from "./service.js"
 import {
@@ -26,6 +28,8 @@ app.use(
     origin: allowedOrigin === "*" ? true : allowedOrigin,
   })
 )
+app.use(requestLogger())
+app.use(httpRequestMiddleware())
 app.use(
   createRateLimiter({
     windowMs: config.rateLimitWindowMs,
@@ -52,6 +56,14 @@ app.get("/health", (_req, res) => {
     },
     timestamp: new Date().toISOString(),
   })
+})
+
+app.get("/metrics", (_req, res) => {
+  const runtime = service.getRuntimeMetrics()
+  const guardians = service.getGuardianStatus()
+  const body = renderMetrics(runtime, guardians, config.mode)
+  res.setHeader("content-type", "text/plain; version=0.0.4; charset=utf-8")
+  res.send(body)
 })
 
 app.post("/guardians/heartbeat", async (req, res) => {
@@ -129,6 +141,5 @@ app.get("/redemptions/:redemptionId", async (req, res) => {
 })
 
 app.listen(port, () => {
-  // eslint-disable-next-line no-console
-  console.log(`pbtc-bridge-api listening on :${port}`)
+  log.info("bridge api started", { port, mode: config.mode })
 })
