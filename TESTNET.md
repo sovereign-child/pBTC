@@ -116,7 +116,19 @@ bash testnet-start.sh --full
 testnet-start.cmd --full
 ```
 
-This adds the monitoring sidecar (requires `ELECTRUM_URL` in `.env.testnet`).
+This adds the full observability stack:
+- **Monitoring sidecar** — on-chain event detection (deposits, redemptions, minting, wallet)
+- **Prometheus** — metrics collection with 30-day retention, scraping `/metrics` every 15s
+- **Grafana** — pre-built dashboard with request rates, latency percentiles, guardian counts, queue depth
+
+After `--full` startup:
+
+| Service | URL |
+| --- | --- |
+| **Prometheus** | http://localhost:9090 |
+| **Grafana** | http://localhost:3000 (admin / pbtc-testnet) |
+
+The monitoring sidecar also requires `ELECTRUM_URL` in `.env.testnet` if you want on-chain event detection.
 
 ## Configuration
 
@@ -158,6 +170,41 @@ cd ops/pulsechain-validator-sidecar
 
 See [ops/pulsechain-validator-sidecar/README.md](ops/pulsechain-validator-sidecar/README.md) for the full operator guide.
 
+## Public Status Page
+
+A standalone status page is available at `/status.html` that works without any build step:
+
+```
+http://localhost:8080/status.html
+```
+
+Enter the Bridge API URL (e.g. `http://localhost:3007`) and it connects live, auto-refreshing every 15s. This page can be hosted anywhere (GitHub Pages, Vercel, Netlify) — it's a single HTML file with zero dependencies.
+
+It shows:
+- GO / NO-GO mainnet readiness verdict
+- Launch gate checklist
+- Live metrics (guardians, reliability, uptime, queue depth, completion times)
+- Per-operation statistics (requests, failures, success rate, latency)
+
+## Observability Endpoints
+
+The Bridge API exposes two observability endpoints:
+
+| Endpoint | Format | Purpose |
+| --- | --- | --- |
+| `GET /health` | JSON | Full health snapshot (guardians, runtime, operations) |
+| `GET /metrics` | Prometheus text | Scrapable metrics for Prometheus/Grafana |
+
+Key Prometheus metrics:
+- `pbtc_bridge_requests_total{operation}` — request counter per operation
+- `pbtc_bridge_requests_failed_total{operation}` — failure counter
+- `pbtc_bridge_request_duration_ms_bucket{operation}` — latency histogram (p50/p95/p99)
+- `pbtc_guardians_active` / `pbtc_minting_allowed` — guardian state
+- `pbtc_pending_deposits` / `pbtc_pending_redemptions` — queue depth
+- `pbtc_http_requests_total{method,route,status}` — HTTP request breakdown
+
+All API requests include structured JSON logging with correlation IDs (`x-correlation-id` header).
+
 ## Reporting Issues
 
 Use the **Submit Testnet Feedback** button on the Testnet Dashboard, or file directly:
@@ -177,13 +224,17 @@ When reporting, include:
 │   pBTC Portal    │────▶│  Bridge API      │────▶│  Guardian HB     │
 │   (nginx:80)     │     │  (node:3007)     │     │  (curl loop)     │
 │                  │     │                  │     │                  │
-│  - Bridge UI     │     │  - Mock lifecycle│     │  - Heartbeat     │
-│  - Testnet Dash  │     │  - Health/metrics│     │    every 30s     │
+│  - Bridge UI     │     │  - /health (JSON)│     │  - Heartbeat     │
+│  - Testnet Dash  │     │  - /metrics(Prom)│     │    every 30s     │
 │  - Transparency  │     │  - Guardian mgmt │     │                  │
+│  - Status Page   │     │  - Structured log│     │                  │
 └─────────────────┘     └─────────────────┘     └──────────────────┘
                                 │
-                        ┌───────┴───────┐
-                        │  Monitor      │  (--full profile only)
-                        │  (node loop)  │
-                        └───────────────┘
+              ┌─────────────────┼─────────────────┐
+              │                 │                  │
+      ┌───────┴───────┐ ┌──────┴──────┐  ┌────────┴────────┐
+      │  Monitor      │ │ Prometheus  │  │    Grafana      │
+      │  (node loop)  │ │ (:9090)     │  │    (:3000)      │
+      └───────────────┘ └─────────────┘  └─────────────────┘
+                        (all --full profile only)
 ```

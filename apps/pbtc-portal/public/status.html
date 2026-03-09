@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>pBTC Protocol Status</title>
+  <meta name="description" content="Live status page for the pBTC protocol on Pulsechain. Check bridge health, guardian quorum, and mainnet readiness." />
+  <link rel="icon" href="/pbtc-favicon.svg" />
+  <style>
+    :root {
+      --bg: #060313;
+      --panel: #0e0a25;
+      --panel-border: #3a1f78;
+      --text: #f9f4ff;
+      --subtle: #c8bcff;
+      --pulse: #ff2fae;
+      --pulse-2: #1edcff;
+      --ok: #87ffe1;
+      --warn: #ffc82f;
+      --fail: #ff2fae;
+    }
+    * { box-sizing: border-box; margin: 0; }
+    body {
+      min-height: 100vh;
+      font-family: Inter, "Segoe UI", Arial, sans-serif;
+      color: var(--text);
+      background:
+        radial-gradient(circle at 12% 8%, rgba(255,47,174,0.28) 0%, rgba(255,47,174,0) 42%),
+        radial-gradient(circle at 85% 82%, rgba(30,220,255,0.22) 0%, rgba(30,220,255,0) 45%),
+        radial-gradient(circle at top, #180a43 0%, var(--bg) 46%);
+    }
+    .container { max-width: 960px; margin: 0 auto; padding: 32px 20px 48px; }
+    .header { text-align: center; margin-bottom: 24px; }
+    .header h1 { font-size: 36px; letter-spacing: -0.5px; margin-bottom: 6px; }
+    .header p { color: var(--subtle); font-size: 15px; }
+    .badge {
+      display: inline-block; padding: 6px 14px; border-radius: 999px;
+      background: rgba(255,47,174,0.2); color: #ffd0ef; font-size: 12px;
+      letter-spacing: 0.6px; text-transform: uppercase; font-weight: 700;
+      margin-bottom: 10px;
+    }
+    .panel {
+      background: linear-gradient(180deg, #140e35 0%, var(--panel) 100%);
+      border: 1px solid var(--panel-border); border-radius: 14px;
+      box-shadow: 0 10px 34px rgba(6,3,19,0.45); padding: 20px; margin-bottom: 14px;
+    }
+    .panel h2 { margin: 0 0 14px; font-size: 18px; }
+    .verdict-banner {
+      display: flex; align-items: center; gap: 16px; padding: 12px 0 6px;
+    }
+    .verdict-label {
+      display: inline-flex; align-items: center; padding: 10px 28px;
+      border-radius: 12px; font-size: 28px; font-weight: 800;
+      letter-spacing: 2px; text-transform: uppercase; border: 2px solid transparent;
+    }
+    .verdict-go { color: #d7fff4; background: rgba(41,231,180,0.18); border-color: rgba(41,231,180,0.6); box-shadow: 0 0 24px rgba(41,231,180,0.2); }
+    .verdict-nogo { color: #ffd7f0; background: rgba(255,47,174,0.18); border-color: rgba(255,47,174,0.6); box-shadow: 0 0 24px rgba(255,47,174,0.2); }
+    .verdict-detail { color: var(--subtle); font-size: 16px; font-weight: 600; }
+    .gates-table { width: 100%; border-collapse: collapse; }
+    .gates-table th, .gates-table td { border: 1px solid var(--panel-border); padding: 10px; text-align: left; font-size: 13px; }
+    .gates-table th { color: var(--subtle); }
+    .gate-badge {
+      display: inline-flex; align-items: center; padding: 3px 10px;
+      border-radius: 6px; font-size: 11px; font-weight: 700;
+      letter-spacing: 0.5px; text-transform: uppercase; border: 1px solid transparent;
+    }
+    .gate-pass { color: #d7fff4; background: rgba(41,231,180,0.2); border-color: rgba(41,231,180,0.55); }
+    .gate-fail { color: #ffd7f0; background: rgba(255,47,174,0.2); border-color: rgba(255,47,174,0.55); }
+    .gate-pending { color: #fff4d7; background: rgba(255,200,47,0.15); border-color: rgba(255,200,47,0.5); }
+    .metric-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px; margin-top: 12px; }
+    .metric-card {
+      background: linear-gradient(180deg, #140e35 0%, var(--panel) 100%);
+      border: 1px solid var(--panel-border); border-radius: 14px; padding: 16px;
+    }
+    .metric-label { color: var(--subtle); font-size: 13px; margin: 0; }
+    .metric-value { font-size: 24px; font-weight: 700; margin: 8px 0; }
+    .metric-source { color: #9f90d9; font-size: 12px; margin: 0; }
+    .note { color: #d0c6ff; font-size: 13px; margin-top: 10px; }
+    .status-dot { display: inline-block; width: 10px; height: 10px; border-radius: 50%; margin-right: 6px; }
+    .dot-green { background: var(--ok); box-shadow: 0 0 8px rgba(135,255,225,0.5); }
+    .dot-red { background: var(--fail); box-shadow: 0 0 8px rgba(255,47,174,0.5); }
+    .dot-yellow { background: var(--warn); box-shadow: 0 0 8px rgba(255,200,47,0.5); }
+    .footer { text-align: center; margin-top: 20px; color: var(--subtle); font-size: 12px; }
+    .footer a { color: var(--pulse-2); }
+    #error-banner { display: none; padding: 14px; background: rgba(255,47,174,0.15); border: 1px solid rgba(255,47,174,0.4); border-radius: 10px; margin-bottom: 14px; color: #ffd0ef; text-align: center; }
+    .config-bar { display: flex; gap: 8px; align-items: center; margin-bottom: 16px; }
+    .config-bar input { flex: 1; background: #0e0a20; border: 1px solid var(--panel-border); color: var(--text); border-radius: 8px; padding: 8px 12px; font-size: 14px; }
+    .config-bar button { background: linear-gradient(90deg, var(--pulse), var(--pulse-2)); color: white; border: none; border-radius: 8px; padding: 8px 16px; font-weight: 600; cursor: pointer; }
+    @media (max-width: 640px) {
+      .container { padding: 20px 14px; }
+      .header h1 { font-size: 28px; }
+      .verdict-label { font-size: 22px; padding: 8px 18px; }
+      .metric-grid { grid-template-columns: 1fr 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <span class="badge">Live Protocol Status</span>
+      <h1>pBTC Status</h1>
+      <p>Real-time health and readiness for the pBTC bridge on Pulsechain</p>
+    </div>
+
+    <div class="config-bar">
+      <input type="text" id="api-url" placeholder="Bridge API URL (e.g. http://localhost:3007)" />
+      <button onclick="connectApi()">Connect</button>
+    </div>
+
+    <div id="error-banner"></div>
+
+    <!-- Verdict -->
+    <div class="panel" id="verdict-panel" style="display:none">
+      <h2>Mainnet Readiness</h2>
+      <div class="verdict-banner">
+        <span class="verdict-label" id="verdict-label"></span>
+        <span class="verdict-detail" id="verdict-detail"></span>
+      </div>
+      <p class="note" id="verdict-time"></p>
+    </div>
+
+    <!-- Gates -->
+    <div class="panel" id="gates-panel" style="display:none">
+      <h2>Launch Gate Checklist</h2>
+      <table class="gates-table">
+        <thead><tr><th>Gate</th><th>Status</th><th>Detail</th></tr></thead>
+        <tbody id="gates-body"></tbody>
+      </table>
+    </div>
+
+    <!-- Metrics -->
+    <div class="panel" id="metrics-panel" style="display:none">
+      <h2>Live Metrics</h2>
+      <div class="metric-grid" id="metrics-grid"></div>
+      <p class="note" id="metrics-note"></p>
+    </div>
+
+    <!-- Operations -->
+    <div class="panel" id="ops-panel" style="display:none">
+      <h2>Operation Metrics</h2>
+      <table class="gates-table">
+        <thead><tr><th>Operation</th><th>Requests</th><th>Failures</th><th>Success Rate</th><th>Avg Latency</th></tr></thead>
+        <tbody id="ops-body"></tbody>
+      </table>
+    </div>
+
+    <div class="footer">
+      <p>Auto-refreshes every 15 seconds &bull; <a href="https://github.com/soverign-child/pBTC">pBTC on GitHub</a></p>
+      <p id="last-update"></p>
+    </div>
+  </div>
+
+  <script>
+    let apiUrl = '';
+    let intervalId = null;
+
+    function connectApi() {
+      const input = document.getElementById('api-url');
+      apiUrl = input.value.replace(/\/+$/, '');
+      if (!apiUrl) { showError('Enter a Bridge API URL'); return; }
+      localStorage.setItem('pbtc-status-api', apiUrl);
+      hideError();
+      fetchHealth();
+      if (intervalId) clearInterval(intervalId);
+      intervalId = setInterval(fetchHealth, 15000);
+    }
+
+    // Auto-connect from localStorage or URL param
+    (function init() {
+      const params = new URLSearchParams(window.location.search);
+      const saved = params.get('api') || localStorage.getItem('pbtc-status-api') || '';
+      if (saved) {
+        document.getElementById('api-url').value = saved;
+        apiUrl = saved.replace(/\/+$/, '');
+        fetchHealth();
+        intervalId = setInterval(fetchHealth, 15000);
+      }
+    })();
+
+    function showError(msg) {
+      const el = document.getElementById('error-banner');
+      el.textContent = msg;
+      el.style.display = 'block';
+    }
+    function hideError() {
+      document.getElementById('error-banner').style.display = 'none';
+    }
+
+    async function fetchHealth() {
+      if (!apiUrl) return;
+      try {
+        const res = await fetch(apiUrl + '/health', { signal: AbortSignal.timeout(8000) });
+        const data = await res.json();
+        hideError();
+        renderStatus(data);
+      } catch (e) {
+        showError('Cannot reach ' + apiUrl + '/health — ' + (e.message || 'network error'));
+        // Keep panels visible with stale data
+      }
+    }
+
+    function renderStatus(h) {
+      // Gates
+      const gates = deriveGates(h);
+      const passCount = gates.filter(g => g.status === 'pass').length;
+      const allPass = passCount === gates.length;
+
+      // Verdict
+      const vp = document.getElementById('verdict-panel'); vp.style.display = '';
+      const vl = document.getElementById('verdict-label');
+      vl.textContent = allPass ? 'GO' : 'NO-GO';
+      vl.className = 'verdict-label ' + (allPass ? 'verdict-go' : 'verdict-nogo');
+      document.getElementById('verdict-detail').textContent = passCount + '/' + gates.length + ' gates passed';
+      document.getElementById('verdict-time').textContent = 'Last checked: ' + new Date().toLocaleTimeString();
+
+      // Gates table
+      const gp = document.getElementById('gates-panel'); gp.style.display = '';
+      const gb = document.getElementById('gates-body');
+      gb.innerHTML = gates.map(g => {
+        const cls = g.status === 'pass' ? 'gate-pass' : g.status === 'fail' ? 'gate-fail' : 'gate-pending';
+        const label = g.status.toUpperCase();
+        return '<tr><td>' + esc(g.name) + '</td><td><span class="gate-badge ' + cls + '">' + label + '</span></td><td>' + esc(g.detail) + '</td></tr>';
+      }).join('');
+
+      // Metrics
+      const mp = document.getElementById('metrics-panel'); mp.style.display = '';
+      const mg = document.getElementById('metrics-grid');
+      const r = h.runtime || {};
+      const g = h.guardians || {};
+      const bh = r.bridgeHealth || {};
+      const totalReqs = r.totalRequests || 0;
+      const totalFails = r.totalFailures || 0;
+      const reliability = totalReqs > 0 ? ((1 - totalFails / totalReqs) * 100).toFixed(2) + '%' : '-';
+      const uptime = typeof r.uptimeMs === 'number' ? Math.floor(r.uptimeMs / 60000) + ' min' : '-';
+
+      mg.innerHTML = [
+        card('API Status', h.ok ? 'Healthy' : 'Down', 'Mode: ' + (h.mode || '?')),
+        card('Guardians', (g.activeGuardians ?? '-') + '/' + (g.minimumGuardiansForMint ?? '-'), g.mintingAllowed ? 'Minting enabled' : 'Minting paused'),
+        card('Reliability', reliability, totalReqs + ' requests, ' + totalFails + ' failures'),
+        card('Uptime', uptime, 'Since: ' + (r.startedAt || '?')),
+        card('Pending Queue', bh.pendingQueueDepth ?? '-', 'Deposits: ' + (bh.pendingDeposits ?? '-') + ' | Redemptions: ' + (bh.pendingRedemptions ?? '-')),
+        card('Deposit Completion', bh.medianDepositCompletionMs != null ? Math.round(bh.medianDepositCompletionMs / 1000) + 's' : '-', 'Median time'),
+      ].join('');
+
+      document.getElementById('metrics-note').textContent = 'API timestamp: ' + (h.timestamp || '-');
+
+      // Operations table
+      const op = document.getElementById('ops-panel'); op.style.display = '';
+      const ob = document.getElementById('ops-body');
+      const ops = r.operationMetrics || {};
+      ob.innerHTML = ['initDeposit', 'getDepositStatus', 'initRedemption', 'getRedemptionStatus', 'heartbeatGuardian'].map(name => {
+        const m = ops[name] || {};
+        const reqs = m.requests || 0;
+        const fails = m.failures || 0;
+        const rate = reqs > 0 ? ((1 - fails / reqs) * 100).toFixed(1) + '%' : '-';
+        const lat = m.averageLatencyMs != null ? m.averageLatencyMs + ' ms' : '-';
+        return '<tr><td>' + name + '</td><td>' + reqs + '</td><td>' + fails + '</td><td>' + rate + '</td><td>' + lat + '</td></tr>';
+      }).join('');
+
+      document.getElementById('last-update').textContent = 'Last update: ' + new Date().toLocaleString();
+    }
+
+    function card(label, value, source) {
+      return '<article class="metric-card"><p class="metric-label">' + esc(label) + '</p><p class="metric-value">' + esc(value) + '</p><p class="metric-source">' + esc(source) + '</p></article>';
+    }
+
+    function esc(s) { const d = document.createElement('div'); d.textContent = String(s); return d.innerHTML; }
+
+    function deriveGates(h) {
+      const apiOk = !!h.ok;
+      const guardiansOk = !!(h.guardians && h.guardians.mintingAllowed);
+      const active = (h.guardians && h.guardians.activeGuardians) || 0;
+      const min = (h.guardians && h.guardians.minimumGuardiansForMint) || 0;
+      const totalReqs = (h.runtime && h.runtime.totalRequests) || 0;
+      const totalFails = (h.runtime && h.runtime.totalFailures) || 0;
+      const failRate = totalReqs > 0 ? (totalFails / totalReqs) * 100 : 0;
+      return [
+        { name: 'Bridge API Health', status: apiOk ? 'pass' : 'fail', detail: apiOk ? 'API healthy (mode: ' + h.mode + ')' : 'API unreachable' },
+        { name: 'Guardian Quorum', status: guardiansOk ? 'pass' : active > 0 ? 'pending' : 'fail', detail: active + '/' + min + ' guardians — ' + (guardiansOk ? 'minting enabled' : 'minting paused') },
+        { name: 'API Reliability', status: totalReqs === 0 ? 'pending' : failRate < 5 ? 'pass' : 'fail', detail: totalReqs === 0 ? 'No requests yet' : (100 - failRate).toFixed(2) + '% success rate' },
+        { name: 'Portal Reachable', status: 'pass', detail: 'Status page is serving (you are viewing it)' },
+        { name: 'Observability', status: apiOk ? 'pass' : 'pending', detail: apiOk ? 'Health + metrics endpoints active' : 'Health endpoint not reachable' },
+      ];
+    }
+  </script>
+</body>
+</html>
