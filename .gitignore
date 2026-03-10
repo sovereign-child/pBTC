@@ -13,3 +13,6 @@ CLAUDE.md
 # Testnet environment (secrets)
 .env.testnet
 .env
+
+# Bridge API persistent state
+apps/pbtc-bridge-api/data/

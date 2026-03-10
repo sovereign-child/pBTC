@@ -7,6 +7,7 @@ import { log, requestLogger } from "./logger.js"
 import { httpRequestMiddleware, renderMetrics } from "./prometheus.js"
 import { createRateLimiter } from "./rate-limit.js"
 import { createBridgeService } from "./service.js"
+import { createStore } from "./store.js"
 import {
   parseDepositInitRequest,
   parseGuardianHeartbeatRequest,
@@ -16,7 +17,17 @@ import {
 
 const app = express()
 const config = loadConfig()
-const service = createBridgeService(config)
+const store = createStore()
+const service = createBridgeService(config, store)
+
+// Flush store to disk on shutdown
+const gracefulShutdown = () => {
+  log.info("shutting down, flushing store")
+  store.flush()
+  process.exit(0)
+}
+process.on("SIGTERM", gracefulShutdown)
+process.on("SIGINT", gracefulShutdown)
 
 const port = config.port
 const allowedOrigin = config.corsOrigin

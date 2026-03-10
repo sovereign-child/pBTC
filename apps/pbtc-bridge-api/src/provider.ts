@@ -1,5 +1,6 @@
 import { randomUUID } from "node:crypto"
 import { BridgeApiError } from "./errors.js"
+import type { Store } from "./store.js"
 import {
   DepositInitRequest,
   DepositInitResponse,
@@ -20,23 +21,6 @@ export type BridgeProvider = {
   getDepositStatus: (depositId: string) => Promise<DepositStatusResponse>
   initRedemption: (request: RedemptionInitRequest) => Promise<RedemptionInitResponse>
   getRedemptionStatus: (redemptionId: string) => Promise<RedemptionStatusResponse>
-}
-
-type DepositRecord = {
-  request: DepositInitRequest
-  createdAt: number
-  depositAddress: string
-  depositId: string
-  btcTxHash: string
-  pulseTxHash: string
-}
-
-type RedemptionRecord = {
-  request: RedemptionInitRequest
-  createdAt: number
-  redemptionId: string
-  btcTxHash: string
-  pulseTxHash: string
 }
 
 type UpstreamOptions = {
@@ -265,9 +249,14 @@ const createUpstreamRequester = (baseUrl: string, apiKey: string | undefined, op
   return requestJson
 }
 
-export const createMockProvider = (): BridgeProvider => {
-  const deposits = new Map<string, DepositRecord>()
-  const redemptions = new Map<string, RedemptionRecord>()
+export const createMockProvider = (store?: Store): BridgeProvider => {
+  // Use store-backed maps when available, otherwise fall back to in-memory
+  const deposits = store
+    ? store.deposits
+    : new Map<string, DepositRecord & { depositId: string }>()
+  const redemptions = store
+    ? store.redemptions
+    : new Map<string, RedemptionRecord & { redemptionId: string }>()
 
   return {
     initDeposit: async (request: DepositInitRequest): Promise<DepositInitResponse> => {
@@ -276,21 +265,29 @@ export const createMockProvider = (): BridgeProvider => {
       assertSats(request.amountSats)
 
       const depositId = randomUUID()
-      const record: DepositRecord = {
-        request,
-        createdAt: Date.now(),
-        depositAddress: fakeTestnetAddress(depositId),
-        depositId,
-        btcTxHash: fakeTxHash(),
-        pulseTxHash: fakeTxHash(),
-      }
+      const createdAt = Date.now()
+      const depositAddress = fakeTestnetAddress(depositId)
+      const btcTxHash = fakeTxHash()
+      const pulseTxHash = fakeTxHash()
 
-      deposits.set(depositId, record)
+      deposits.set(depositId, {
+        depositId,
+        evmAddress: request.evmAddress,
+        recoveryBtcAddress: request.recoveryBtcAddress,
+        amountSats: request.amountSats,
+        depositAddress,
+        btcTxHash,
+        pulseTxHash,
+        createdAt,
+        completedAt: null,
+      })
+
+      if (store) store.markDirty()
 
       return {
         depositId,
-        depositAddress: record.depositAddress,
-        expiresAt: new Date(record.createdAt + 30 * 60 * 1000).toISOString(),
+        depositAddress,
+        expiresAt: new Date(createdAt + 30 * 60 * 1000).toISOString(),
       }
     },
 
@@ -334,6 +331,12 @@ export const createMockProvider = (): BridgeProvider => {
         }
       }
 
+      // Mark completed in store
+      if (record.completedAt === null) {
+        record.completedAt = Date.now()
+        if (store) store.markDirty()
+      }
+
       return {
         depositId,
         status: "minted",
@@ -351,19 +354,26 @@ export const createMockProvider = (): BridgeProvider => {
       assertSats(request.amountSats)
 
       const redemptionId = randomUUID()
-      const record: RedemptionRecord = {
-        request,
-        createdAt: Date.now(),
-        redemptionId,
-        btcTxHash: fakeTxHash(),
-        pulseTxHash: fakeTxHash(),
-      }
+      const createdAt = Date.now()
+      const btcTxHash = fakeTxHash()
+      const pulseTxHash = fakeTxHash()
 
-      redemptions.set(redemptionId, record)
+      redemptions.set(redemptionId, {
+        redemptionId,
+        evmAddress: request.evmAddress,
+        bitcoinAddress: request.bitcoinAddress,
+        amountSats: request.amountSats,
+        btcTxHash,
+        pulseTxHash,
+        createdAt,
+        completedAt: null,
+      })
+
+      if (store) store.markDirty()
 
       return {
         redemptionId,
-        txHash: record.pulseTxHash,
+        txHash: pulseTxHash,
       }
     },
 
@@ -404,6 +414,12 @@ export const createMockProvider = (): BridgeProvider => {
           pulseTxHash: record.pulseTxHash,
           btcTxHash: record.btcTxHash,
         }
+      }
+
+      // Mark completed in store
+      if (record.completedAt === null) {
+        record.completedAt = Date.now()
+        if (store) store.markDirty()
       }
 
       return {

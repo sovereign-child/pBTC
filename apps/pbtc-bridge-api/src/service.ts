@@ -7,6 +7,7 @@ import {
   createMockProvider,
   createUpstreamProvider,
 } from "./provider.js"
+import type { Store } from "./store.js"
 import {
   DepositInitRequest,
   DepositInitResponse,
@@ -39,7 +40,7 @@ type LifecycleRecord = {
   completedAtMs: number | null
 }
 
-export const createBridgeService = (config: BridgeApiConfig) => {
+export const createBridgeService = (config: BridgeApiConfig, store?: Store) => {
   const provider: BridgeProvider =
     config.mode === "upstream"
       ? createUpstreamProvider(config.upstreamBaseUrl!, config.upstreamApiKey, {
@@ -49,13 +50,31 @@ export const createBridgeService = (config: BridgeApiConfig) => {
           circuitFailureThreshold: config.upstreamCircuitFailureThreshold,
           circuitOpenMs: config.upstreamCircuitOpenMs,
         })
-      : createMockProvider()
+      : createMockProvider(store)
 
-  const heartbeats = new Map<string, { lastSeenMs: number; version?: string }>()
+  // Use store-backed maps when available, otherwise in-memory
+  const heartbeats = store
+    ? store.guardians
+    : new Map<string, { guardianId: string; lastSeenMs: number; version?: string }>()
   const deposits = new Map<string, LifecycleRecord>()
   const redemptions = new Map<string, LifecycleRecord>()
-  const depositCompletionDurationsMs: number[] = []
-  const redemptionCompletionDurationsMs: number[] = []
+
+  // Restore lifecycle records from store
+  if (store) {
+    for (const [id, d] of store.deposits) {
+      deposits.set(id, { createdAtMs: d.createdAt, completedAtMs: d.completedAt })
+    }
+    for (const [id, r] of store.redemptions) {
+      redemptions.set(id, { createdAtMs: r.createdAt, completedAtMs: r.completedAt })
+    }
+  }
+
+  const depositCompletionDurationsMs: number[] = store
+    ? store.depositCompletionDurationsMs
+    : []
+  const redemptionCompletionDurationsMs: number[] = store
+    ? store.redemptionCompletionDurationsMs
+    : []
   const startedAtMs = Date.now()
 
   const getMedian = (values: number[]): number | null => {
@@ -168,8 +187,8 @@ export const createBridgeService = (config: BridgeApiConfig) => {
     const now = Date.now()
 
     const guardians = Array.from(heartbeats.entries())
-      .map(([guardianId, record]) => ({
-        guardianId,
+      .map(([, record]) => ({
+        guardianId: record.guardianId,
         heartbeatAt: new Date(record.lastSeenMs).toISOString(),
         isActive: now - record.lastSeenMs <= config.guardianHeartbeatTtlMs,
         version: record.version,
@@ -283,9 +302,11 @@ export const createBridgeService = (config: BridgeApiConfig) => {
       return executeWithMetrics("heartbeatGuardian", async () => {
         const nowMs = Date.now()
         heartbeats.set(request.guardianId, {
+          guardianId: request.guardianId,
           lastSeenMs: nowMs,
           version: request.version,
         })
+        if (store) store.markDirty()
 
         return {
           ok: true,

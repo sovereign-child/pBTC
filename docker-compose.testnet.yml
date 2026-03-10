@@ -47,6 +47,9 @@ services:
       UPSTREAM_CIRCUIT_OPEN_MS: "${UPSTREAM_CIRCUIT_OPEN_MS:-30000}"
       RATE_LIMIT_WINDOW_MS: "${RATE_LIMIT_WINDOW_MS:-60000}"
       RATE_LIMIT_MAX_REQUESTS: "${RATE_LIMIT_MAX_REQUESTS:-60}"
+      STORE_FILE_PATH: "/app/data/bridge-state.json"
+    volumes:
+      - bridge_data:/app/data
     deploy:
       resources:
         limits:
@@ -198,6 +201,7 @@ services:
       - full
 
 volumes:
+  bridge_data:
   monitor_data:
   prometheus_data:
   grafana_data:
