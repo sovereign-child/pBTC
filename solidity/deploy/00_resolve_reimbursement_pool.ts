@@ -11,6 +11,20 @@ const func: DeployFunction = async function resolveReimbursementPool(
 
   if (ReimbursementPool && helpers.address.isValid(ReimbursementPool.address)) {
     log(`using existing ReimbursementPool at ${ReimbursementPool.address}`)
+  } else if (
+    hre.network.name === "pulsechainTestnet" ||
+    hre.network.name === "hardhat" ||
+    hre.network.name === "development"
+  ) {
+    const { deployer } = await hre.getNamedAccounts()
+    log("deploying TestReimbursementPool stub for testnet")
+
+    await deployments.deploy("ReimbursementPool", {
+      contract: "TestReimbursementPool",
+      from: deployer,
+      log: true,
+      waitConfirmations: 1,
+    })
   } else {
     throw new Error("deployed ReimbursementPool contract not found")
   }

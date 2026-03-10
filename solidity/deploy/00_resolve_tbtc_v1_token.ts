@@ -13,11 +13,10 @@ const func: DeployFunction = async function resolveTbtcV1Token(
   if (TBTCToken && helpers.address.isValid(TBTCToken.address)) {
     log(`using external TBTCToken at ${TBTCToken.address}`)
   } else if (
-    !hre.network.tags.allowStubs ||
-    (hre.network.config as HardhatNetworkConfig)?.forking?.enabled
+    hre.network.name === "pulsechainTestnet" ||
+    (hre.network.tags.allowStubs &&
+      !(hre.network.config as HardhatNetworkConfig)?.forking?.enabled)
   ) {
-    throw new Error("deployed TBTCToken contract not found")
-  } else {
     log("deploying TBTCToken stub")
 
     await deployments.deploy("TBTCToken", {
@@ -25,6 +24,8 @@ const func: DeployFunction = async function resolveTbtcV1Token(
       from: deployer,
       log: true,
     })
+  } else {
+    throw new Error("deployed TBTCToken contract not found")
   }
 }
 

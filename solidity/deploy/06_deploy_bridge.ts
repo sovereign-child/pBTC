@@ -17,7 +17,8 @@ const func: DeployFunction = async function deployBridge(
   const txProofDifficultyFactor =
     deployments.getNetworkName() === "hardhat" ||
     deployments.getNetworkName() === "development" ||
-    deployments.getNetworkName() === "system_tests"
+    deployments.getNetworkName() === "system_tests" ||
+    deployments.getNetworkName() === "pulsechainTestnet"
       ? 1
       : 6
 
