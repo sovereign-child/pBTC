@@ -1,0 +1,41 @@
+name: pBTC Relay Maintainer
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - "apps/pbtc-relay-maintainer/**"
+      - ".github/workflows/pbtc-relay-maintainer.yml"
+  pull_request:
+    paths:
+      - "apps/pbtc-relay-maintainer/**"
+      - ".github/workflows/pbtc-relay-maintainer.yml"
+  workflow_dispatch:
+
+jobs:
+  relay-maintainer:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./apps/pbtc-relay-maintainer
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20.x"
+          cache: "npm"
+          cache-dependency-path: apps/pbtc-relay-maintainer/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Typecheck
+        run: npm run typecheck
+
+      - name: Unit tests (pure header + epoch logic, offline)
+        run: npm test
+        # The live Esplora integration tests are gated behind RUN_BTC_INTEGRATION=1
+        # and intentionally not run here (network-dependent). Run them manually:
+        #   RUN_BTC_INTEGRATION=1 npm test

@@ -1,0 +1,29 @@
+# Local Bitcoin regtest node for pBTC SPV e2e (genesis + tx-inclusion proofs).
+# RPC is exposed on 18443 with simple auth — REGTEST/LOCAL ONLY, never expose this.
+#
+#   docker compose -f system-tests/regtest/docker-compose.regtest.yml up -d
+#   # mine to an epoch boundary + maturity, then drive the relay maintainer:
+#   docker exec pbtc-regtest bitcoin-cli -regtest -rpcuser=pbtc -rpcpassword=pbtc \
+#     -generate 200
+#
+# See ./RUNBOOK.md for the full flow.
+services:
+  bitcoind-regtest:
+    image: lncm/bitcoind:v27.0
+    container_name: pbtc-regtest
+    command:
+      - -regtest=1
+      - -server=1
+      - -txindex=1
+      - -rpcbind=0.0.0.0
+      - -rpcallowip=0.0.0.0/0
+      - -rpcuser=pbtc
+      - -rpcpassword=pbtc
+      - -fallbackfee=0.0002
+    ports:
+      - "18443:18443" # regtest JSON-RPC
+    volumes:
+      - regtest-data:/data/.bitcoin
+
+volumes:
+  regtest-data:

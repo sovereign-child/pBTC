@@ -1,0 +1,21 @@
+{
+  "name": "@pbtc/relay-maintainer",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Feeds Bitcoin block headers to the pBTC LightRelay (genesis + per-epoch retarget) so BTC deposits can be SPV-verified on-chain on PulseChain.",
+  "scripts": {
+    "genesis": "tsx src/index.ts genesis",
+    "run": "tsx src/index.ts run",
+    "test": "node --import tsx --test \"src/**/*.test.ts\"",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "ethers": "^6.13.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.14.0",
+    "tsx": "^4.19.2",
+    "typescript": "^5.5.0"
+  }
+}
