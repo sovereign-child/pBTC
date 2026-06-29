@@ -106,6 +106,63 @@ export async function loadEthereumCoreContracts(
 }
 
 /**
+ * Explicit core-contract addresses for an EVM chain the SDK does not bundle
+ * deployment artifacts for (notably PulseChain / pBTC).
+ */
+export interface CoreContractAddresses {
+  bridge: string
+  tbtcToken: string
+  tbtcVault: string
+  walletRegistry: string
+}
+
+/**
+ * Loads tBTC core contracts at explicit addresses. Use this for EVM chains the
+ * SDK has no bundled deployment for — e.g. PulseChain (chain 369) and PulseChain
+ * testnet (943), where the pBTC fork deploys its own instances. The ABI is taken
+ * from the canonical artifacts; the addresses are provided by the caller (from
+ * the pBTC deployment export).
+ * @param signer Signer/provider to attach.
+ * @param chainId EVM chain ID (e.g. `Chains.Ethereum.PulseChainTestnet`).
+ * @param addresses Deployed pBTC core-contract addresses.
+ * @throws If the signer's chain ID differs from `chainId`.
+ */
+export async function loadEthereumCoreContractsAt(
+  signer: EthereumSigner,
+  chainId: Chains.Ethereum,
+  addresses: CoreContractAddresses
+): Promise<TBTCContracts> {
+  const signerChainId = await chainIdFromSigner(signer)
+  if (signerChainId !== chainId) {
+    throw new Error("Signer uses different chain than the core contracts")
+  }
+
+  const bridge = new EthereumBridge(
+    { signerOrProvider: signer, address: addresses.bridge },
+    chainId
+  )
+  const tbtcToken = new EthereumTBTCToken(
+    { signerOrProvider: signer, address: addresses.tbtcToken },
+    chainId
+  )
+  const tbtcVault = new EthereumTBTCVault(
+    { signerOrProvider: signer, address: addresses.tbtcVault },
+    chainId
+  )
+  const walletRegistry = new EthereumWalletRegistry(
+    { signerOrProvider: signer, address: addresses.walletRegistry },
+    chainId
+  )
+
+  return {
+    bridge,
+    tbtcToken,
+    tbtcVault,
+    walletRegistry,
+  }
+}
+
+/**
  * Creates the Ethereum implementation of tBTC cross-chain contracts loader.
  * The provided signer is attached to loaded L1 contracts. The given
  * Ethereum chain ID is used to load the L1 contracts and resolve the chain

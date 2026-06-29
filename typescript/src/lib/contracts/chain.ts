@@ -7,6 +7,10 @@ export namespace Chains {
     Mainnet = "1",
     Sepolia = "11155111",
     Local = "1101",
+    // PulseChain is EVM-compatible and hosts the pBTC fork's core contracts, so
+    // its chain IDs live alongside the other EVM ("Ethereum") chains.
+    PulseChain = "369",
+    PulseChainTestnet = "943",
   }
 
   export enum Base {

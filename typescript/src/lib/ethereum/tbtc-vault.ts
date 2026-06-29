@@ -54,6 +54,12 @@ export class EthereumTBTCVault
       case Chains.Ethereum.Mainnet:
         deployment = MainnetTBTCVaultDeployment
         break
+      // PulseChain is EVM-compatible — reuse the canonical ABI; the deployed
+      // pBTC address is supplied via config.address.
+      case Chains.Ethereum.PulseChain:
+      case Chains.Ethereum.PulseChainTestnet:
+        deployment = LocalTBTCVaultDeployment
+        break
       default:
         throw new Error("Unsupported deployment type")
     }
