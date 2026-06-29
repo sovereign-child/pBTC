@@ -1,6 +1,6 @@
 import { randomUUID } from "node:crypto"
 import { BridgeApiError } from "./errors.js"
-import type { Store } from "./store.js"
+import type { PersistedDeposit, PersistedRedemption, Store } from "./store.js"
 import {
   DepositInitRequest,
   DepositInitResponse,
@@ -253,10 +253,10 @@ export const createMockProvider = (store?: Store): BridgeProvider => {
   // Use store-backed maps when available, otherwise fall back to in-memory
   const deposits = store
     ? store.deposits
-    : new Map<string, DepositRecord & { depositId: string }>()
+    : new Map<string, PersistedDeposit>()
   const redemptions = store
     ? store.redemptions
-    : new Map<string, RedemptionRecord & { redemptionId: string }>()
+    : new Map<string, PersistedRedemption>()
 
   return {
     initDeposit: async (request: DepositInitRequest): Promise<DepositInitResponse> => {
