@@ -93,11 +93,23 @@ echo "(WalletRegistry, ReimbursementPool, TBTCToken v1)"
 echo "and the full pBTC contract suite."
 echo ""
 
-# Deploy all contracts in order (hardhat-deploy handles dependency ordering)
+# Deploy all contracts in order, INCLUDING the wiring/authorization steps.
+#
+# IMPORTANT: with `--tags`, hardhat-deploy only runs a script if it is itself
+# tagged or is a transitive `func.dependencies` of a tagged script. The wiring
+# steps (BankUpdateBridge, AuthorizeTBTCVault, MaintainerProxy, ...) declare
+# Bank/Bridge/TBTCVault as *their* dependencies — the arrow points the other
+# way — so deploying only Bank,Bridge,TBTCVault leaves them OUT and the bridge
+# is deployed unwired (Bank doesn't know the Bridge; the Vault is untrusted; no
+# SPV maintainer authorized → deposits/mints revert). They must be listed here.
 npx hardhat deploy \
   --network pulsechainTestnet \
-  --tags TBTCToken,ReimbursementPool,WalletRegistry,LightRelay,TBTC,VendingMachine,Bank,Bridge,TBTCVault \
+  --tags TBTCToken,ReimbursementPool,WalletRegistry,LightRelay,TBTC,VendingMachine,Bank,Bridge,TBTCVault,BankUpdateBridge,AuthorizeTBTCVault,MaintainerProxy,AuthorizeMaintainerProxyInBridge,AuthorizeSpvMaintainer \
   --export-all ./deployments/pulsechainTestnet-export.json
+
+echo ""
+echo -e "${YELLOW}Verifying contract wiring (Bank↔Bridge, Vault authorization)...${NC}"
+npx hardhat run scripts/verify-deploy-wiring.ts --network pulsechainTestnet
 
 echo ""
 echo -e "${GREEN}════════════════════════════════════════════════════════════${NC}"
