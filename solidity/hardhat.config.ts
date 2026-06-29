@@ -207,16 +207,16 @@ const config: HardhatUserConfig = {
         "node_modules/@keep-network/random-beacon/artifacts",
         "node_modules/@keep-network/ecdsa/artifacts",
       ],
-      pulsechainTestnet: [
-        "node_modules/@threshold-network/solidity-contracts/deployments/development",
-        "node_modules/@keep-network/random-beacon/deployments/development",
-        "node_modules/@keep-network/ecdsa/deployments/development",
-      ],
-      pulsechain: [
-        "node_modules/@threshold-network/solidity-contracts/deployments/development",
-        "node_modules/@keep-network/random-beacon/deployments/development",
-        "node_modules/@keep-network/ecdsa/deployments/development",
-      ],
+      // NOTE: PulseChain networks intentionally have NO external deployments.
+      // The external dependencies the deploy consumes (WalletRegistry,
+      // ReimbursementPool, TBTCToken v1) are all produced as stubs by the
+      // deploy/00_resolve_* scripts for these networks. Mapping the upstream
+      // `deployments/development` dirs here (as `development` does) would let
+      // hardhat-deploy load WalletRegistry.json / ReimbursementPool.json from a
+      // foreign dev chain as "existing" deployments, so the stub resolvers
+      // would be skipped and the Bridge would be initialized pointing at
+      // addresses that have no bytecode on PulseChain. Do not add dev
+      // deployment dirs for pulsechainTestnet / pulsechain.
       mainnet: ["./external/mainnet"],
     },
   },
