@@ -39,33 +39,39 @@ RUN_BTC_INTEGRATION=1 npm test
 
 ## Level 3 — Local regtest: genesis + inclusion proof
 
-Bring up a regtest Bitcoin node and drive genesis with the maintainer's
-`bitcoindSource`. Covers genesis + tx-inclusion (not retarget — see scope note).
+Bring up a regtest Bitcoin node + a local EVM, then run the deterministic e2e
+driver (`apps/pbtc-relay-maintainer/src/e2e/genesis-inclusion.ts`). It genesises
+the LightRelay at the regtest genesis epoch and verifies a transaction's SPV
+merkle inclusion proof against the block header's committed root. Covers genesis
++ tx-inclusion (not retarget — see scope note). This is what
+`.github/workflows/pbtc-e2e.yml` runs in CI.
 
 ```bash
 # 1. Bitcoin regtest
 docker compose -f system-tests/regtest/docker-compose.regtest.yml up -d
-docker exec pbtc-regtest bitcoin-cli -regtest -rpcuser=pbtc -rpcpassword=pbtc -generate 200
 
-# 2. Local EVM + deploy the relay (hardhat, pulsechainTestnet-style config)
+# 2. Local EVM + deploy the relay
 cd solidity
-npx hardhat node &                       # local EVM on :8545
-npx hardhat deploy --network development --tags LightRelay
+npx hardhat node &                                   # local EVM on :8545 (chainId 31337)
+npx hardhat deploy --network localhost --tags LightRelay
+RELAY=$(node -e "console.log(require('./deployments/localhost/LightRelay.json').address)")
 
-# 3. Genesis the relay from regtest headers
-cd ../apps/pbtc-relay-maintainer
-EVM_RPC_URL=http://localhost:8545 \
-RELAY_ADDRESS=<deployed LightRelay> \
-MAINTAINER_PRIVATE_KEY=<hardhat account #0 key> \
-BTC_ESPLORA_URL=unused \
+# 3. Run the deterministic genesis + inclusion-proof e2e driver
+cd ../apps/pbtc-relay-maintainer && npm ci
+EVM_RPC_URL=http://127.0.0.1:8545 \
+RELAY_ADDRESS=$RELAY \
+MAINTAINER_PRIVATE_KEY=0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80 \
+BITCOIND_RPC_URL=http://127.0.0.1:18443 \
+BITCOIND_RPC_USER=pbtc BITCOIND_RPC_PASS=pbtc \
 PROOF_LENGTH=4 \
-node --import tsx -e "import('./src/maintainer.js')"   # or wire a small driver using bitcoindSource
+npm run e2e:regtest
 ```
 
-> A small regtest driver (`bitcoindSource('http://localhost:18443','pbtc','pbtc')`
-> + `LightRelayClient`) performs genesis at the regtest genesis epoch and then
-> validates a deposit transaction's inclusion proof. This is the next driver to
-> add; the `bitcoindSource` and `LightRelayClient` building blocks already exist.
+The driver mines past coinbase maturity, genesises the relay, broadcasts a tx,
+mines it, then builds and verifies its inclusion proof — printing
+`e2e PASSED` on success (non-zero exit on any failed assertion). The private key
+above is the well-known hardhat account #0 (local only — never use on a real
+network).
 
 ## Level 4 — Testnet (the real thing, zero value at risk)
 
