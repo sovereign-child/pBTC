@@ -8,6 +8,7 @@
     "typecheck": "tsc --noEmit",
     "build": "tsc -p tsconfig.json",
     "start": "node dist/index.js",
+    "test:unit": "node --import tsx --test \"src/**/*.test.ts\"",
     "test:contract": "npm run build && node scripts/contract-smoke.mjs"
   },
   "dependencies": {

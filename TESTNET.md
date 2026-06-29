@@ -83,12 +83,20 @@ The Testnet Dashboard at `/#/testnet` shows **real-time mainnet readiness gates*
 | --- | --- |
 | Contracts Deployed | Token, Bank, Bridge addresses configured |
 | Bridge API Health | API responding and healthy |
-| Guardian Quorum | Enough guardians for minting |
+| Guardian Liveness | Authenticated guardian heartbeats are fresh (liveness only — see note) |
 | API Reliability | Error rate below 5% |
 | Portal Build | Portal is serving |
 | Observability | Health endpoint and metrics available |
 
-**Overall verdict**: All gates PASS = **GO** for mainnet. Any failure = **NO-GO**.
+> **Guardian liveness is not mint security.** The heartbeat is an
+> authenticated liveness signal, not a mint authorization — real mint
+> authorization is the on-chain SPV proof. This gate confirms guardians are
+> alive and reporting; it does **not**, on its own, make minting safe, and
+> mainnet additionally requires the veto+pause+slashing watchtower layer
+> (`docs/SECURITY-ROADMAP.md` §6). Do not read a green heartbeat gate as
+> "custody/minting is trustless."
+
+**Overall verdict**: All gates PASS = testnet stack is healthy. Mainnet readiness has additional gates beyond this dashboard — see `docs/SECURITY-ROADMAP.md` §6.
 
 This is publicly visible to anyone running the testnet — full transparency into whether the protocol is ready.
 

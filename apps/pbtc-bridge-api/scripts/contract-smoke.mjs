@@ -1,7 +1,27 @@
 import { spawn } from "node:child_process"
 import process from "node:process"
+import { createHmac } from "node:crypto"
+import { tmpdir } from "node:os"
+import { join } from "node:path"
+
+// Build signed guardian heartbeat headers matching src/guardian-auth.ts.
+const signedGuardianHeaders = (id, secret) => {
+  const ts = Date.now()
+  const signature = createHmac("sha256", secret).update(`${id}.${ts}`).digest("hex")
+  return {
+    "x-guardian-id": id,
+    "x-guardian-timestamp": String(ts),
+    "x-guardian-signature": signature,
+  }
+}
 
 const APP_DIR = process.cwd()
+
+// Isolate each spawned server's persistence so suites can't leak guardian/
+// deposit state into one another or across runs (the store debounces writes and
+// can flush after the script exits). Unique per process + suite.
+const storePathFor = (suite) =>
+  join(tmpdir(), `pbtc-smoke-${suite}-${process.pid}.json`)
 
 const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms))
 
@@ -98,6 +118,7 @@ const runMockSuite = async () => {
     port,
     env: {
       BRIDGE_API_MODE: "mock",
+      STORE_FILE_PATH: storePathFor("mock"),
       GUARDIAN_MIN_ACTIVE_FOR_MINT: "2",
       GUARDIAN_HEARTBEAT_TTL_MS: "300000",
     },
@@ -214,6 +235,9 @@ const runUpstreamFailureSuite = async () => {
     port,
     env: {
       BRIDGE_API_MODE: "upstream",
+      STORE_FILE_PATH: storePathFor("upstream"),
+      // Non-mock mode requires guardian heartbeat auth to be configured.
+      GUARDIAN_KEYS: "smoke-guardian:smoke-secret",
       GUARDIAN_MIN_ACTIVE_FOR_MINT: "1",
       GUARDIAN_HEARTBEAT_TTL_MS: "300000",
       UPSTREAM_BRIDGE_API_URL: "http://127.0.0.1:65530",
@@ -227,11 +251,15 @@ const runUpstreamFailureSuite = async () => {
   try {
     await waitForHealth(port)
 
+    // Non-mock mode enforces guardian heartbeat auth — sign with the configured key.
     const heartbeat = await request(port, "/guardians/heartbeat", {
       method: "POST",
-      headers: { "content-type": "application/json" },
+      headers: {
+        "content-type": "application/json",
+        ...signedGuardianHeaders("smoke-guardian", "smoke-secret"),
+      },
       body: JSON.stringify({
-        guardianId: "guardian-upstream-1",
+        guardianId: "smoke-guardian",
       }),
     })
     assert(heartbeat.status === 200, "upstream suite heartbeat should return 200")

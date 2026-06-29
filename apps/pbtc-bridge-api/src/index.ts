@@ -8,6 +8,7 @@ import { httpRequestMiddleware, renderMetrics } from "./prometheus.js"
 import { createRateLimiter } from "./rate-limit.js"
 import { createBridgeService } from "./service.js"
 import { createStore } from "./store.js"
+import { verifyGuardianHeartbeatAuth } from "./guardian-auth.js"
 import {
   parseDepositInitRequest,
   parseGuardianHeartbeatRequest,
@@ -80,6 +81,29 @@ app.get("/metrics", (_req, res) => {
 app.post("/guardians/heartbeat", async (req, res) => {
   try {
     const request = parseGuardianHeartbeatRequest(req.body)
+
+    if (config.guardianAuthEnabled) {
+      const authedId = verifyGuardianHeartbeatAuth(
+        {
+          id: req.header("x-guardian-id"),
+          timestamp: req.header("x-guardian-timestamp"),
+          signature: req.header("x-guardian-signature"),
+        },
+        {
+          keys: config.guardianKeys,
+          maxSkewMs: config.guardianAuthMaxSkewMs,
+          now: Date.now(),
+        }
+      )
+      if (authedId !== request.guardianId) {
+        throw new BridgeApiError({
+          statusCode: 401,
+          code: "guardian_id_mismatch",
+          message: "x-guardian-id header does not match the request body guardianId",
+        })
+      }
+    }
+
     const response = await service.heartbeatGuardian(request)
     res.status(200).json(response)
   } catch (error) {
@@ -152,5 +176,16 @@ app.get("/redemptions/:redemptionId", async (req, res) => {
 })
 
 app.listen(port, () => {
-  log.info("bridge api started", { port, mode: config.mode })
+  log.info("bridge api started", {
+    port,
+    mode: config.mode,
+    guardianAuthEnabled: config.guardianAuthEnabled,
+  })
+  if (!config.guardianAuthEnabled) {
+    log.warn(
+      "guardian heartbeat auth is DISABLED (no GUARDIAN_KEYS configured) — " +
+        "anyone who can reach this port can report guardian liveness. " +
+        "This is for local mock use only; set GUARDIAN_KEYS for any testnet/shared deployment."
+    )
+  }
 })
