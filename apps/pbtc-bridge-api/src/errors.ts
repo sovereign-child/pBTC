@@ -7,6 +7,7 @@ export type BridgeApiErrorCode =
   | "guardian_auth_stale"
   | "guardian_auth_invalid"
   | "guardian_id_mismatch"
+  | "not_implemented"
   | "upstream_rejected"
   | "upstream_timeout"
   | "upstream_unavailable"

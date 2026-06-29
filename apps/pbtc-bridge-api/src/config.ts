@@ -1,6 +1,6 @@
 import { parseGuardianKeys, type GuardianKeys } from "./guardian-auth.js"
 
-export type BridgeApiMode = "mock" | "upstream"
+export type BridgeApiMode = "mock" | "upstream" | "chain"
 
 export type BridgeApiConfig = {
   port: number
@@ -11,6 +11,8 @@ export type BridgeApiConfig = {
   guardianKeys: GuardianKeys
   guardianAuthEnabled: boolean
   guardianAuthMaxSkewMs: number
+  chainEvmRpcUrl?: string
+  chainBridgeAddress?: string
   upstreamBaseUrl?: string
   upstreamApiKey?: string
   upstreamTimeoutMs: number
@@ -45,11 +47,11 @@ const parseMode = (value: string | undefined): BridgeApiMode => {
     return "mock"
   }
 
-  if (value === "upstream") {
-    return "upstream"
+  if (value === "upstream" || value === "chain") {
+    return value
   }
 
-  throw new Error("BRIDGE_API_MODE must be 'mock' or 'upstream'")
+  throw new Error("BRIDGE_API_MODE must be 'mock', 'upstream', or 'chain'")
 }
 
 export const loadConfig = (): BridgeApiConfig => {
@@ -58,6 +60,14 @@ export const loadConfig = (): BridgeApiConfig => {
 
   if (mode === "upstream" && !upstreamBaseUrl) {
     throw new Error("UPSTREAM_BRIDGE_API_URL is required when BRIDGE_API_MODE=upstream")
+  }
+
+  const chainEvmRpcUrl = process.env.EVM_RPC_URL?.trim()
+  const chainBridgeAddress = process.env.BRIDGE_ADDRESS?.trim()
+  if (mode === "chain" && (!chainEvmRpcUrl || !chainBridgeAddress)) {
+    throw new Error(
+      "EVM_RPC_URL and BRIDGE_ADDRESS are required when BRIDGE_API_MODE=chain"
+    )
   }
 
   const guardianKeys = parseGuardianKeys(process.env.GUARDIAN_KEYS)
@@ -95,6 +105,8 @@ export const loadConfig = (): BridgeApiConfig => {
       "GUARDIAN_AUTH_MAX_SKEW_MS",
       1000
     ),
+    chainEvmRpcUrl,
+    chainBridgeAddress,
     upstreamBaseUrl,
     upstreamApiKey: process.env.UPSTREAM_BRIDGE_API_KEY?.trim(),
     upstreamTimeoutMs: parseIntEnv(

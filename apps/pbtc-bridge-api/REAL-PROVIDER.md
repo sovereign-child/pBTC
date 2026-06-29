@@ -1,10 +1,23 @@
-# Bridge API: de-mocking to a real SPV provider (next step)
+# Bridge API: de-mocking to a real SPV provider (in progress)
 
-The bridge API today has two providers (`src/provider.ts`): `mock` (fakes the
-whole lifecycle) and `upstream` (thin HTTP proxy). Neither touches the chain.
-The Phase 1 goal is a third **`chain`** provider that drives the *real*
-SPV-verified flow. It is intentionally **not stubbed in yet** — a half-real
-provider that silently fakes steps is worse than none for a bridge.
+The bridge API has providers (`src/provider.ts` / `src/provider-chain.ts`):
+`mock` (fakes the whole lifecycle), `upstream` (thin HTTP proxy), and now
+**`chain`** — the real, on-chain provider.
+
+**`chain` status (current):** `BRIDGE_API_MODE=chain` reads the pBTC `Bridge` on
+PulseChain (requires `EVM_RPC_URL` + `BRIDGE_ADDRESS`) and reports
+deposit/redemption **status** from on-chain state — `getDepositStatus` /
+`getRedemptionStatus` take the on-chain key (uint256) as the id and map
+revealed/swept (deposits) and pending/completed (redemptions) to the API
+lifecycle (`src/chain/`). The status mapping is pure and unit-tested.
+
+**`chain` still TODO (deliberately not faked):** `initDeposit` /
+`initRedemption` (return `501 not_implemented`) — they need deposit-address
+derivation via the tBTC SDK (`loadEthereumCoreContractsAt` now supports
+PulseChain) and a funded signer, plus a **Bitcoin confirmation watcher** for the
+`btc_detected` / `btc_broadcast` states. These land with the e2e harness, since
+they require a Bitcoin source + signer. A half-real provider that silently fakes
+steps is worse than none for a bridge.
 
 ## What the `chain` provider must do
 

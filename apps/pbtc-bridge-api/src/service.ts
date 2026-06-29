@@ -7,6 +7,7 @@ import {
   createMockProvider,
   createUpstreamProvider,
 } from "./provider.js"
+import { createChainProvider } from "./provider-chain.js"
 import type { Store } from "./store.js"
 import {
   DepositInitRequest,
@@ -41,16 +42,26 @@ type LifecycleRecord = {
 }
 
 export const createBridgeService = (config: BridgeApiConfig, store?: Store) => {
-  const provider: BridgeProvider =
-    config.mode === "upstream"
-      ? createUpstreamProvider(config.upstreamBaseUrl!, config.upstreamApiKey, {
-          timeoutMs: config.upstreamTimeoutMs,
-          maxRetries: config.upstreamMaxRetries,
-          retryBaseMs: config.upstreamRetryBaseMs,
-          circuitFailureThreshold: config.upstreamCircuitFailureThreshold,
-          circuitOpenMs: config.upstreamCircuitOpenMs,
-        })
-      : createMockProvider(store)
+  const selectProvider = (): BridgeProvider => {
+    if (config.mode === "upstream") {
+      return createUpstreamProvider(config.upstreamBaseUrl!, config.upstreamApiKey, {
+        timeoutMs: config.upstreamTimeoutMs,
+        maxRetries: config.upstreamMaxRetries,
+        retryBaseMs: config.upstreamRetryBaseMs,
+        circuitFailureThreshold: config.upstreamCircuitFailureThreshold,
+        circuitOpenMs: config.upstreamCircuitOpenMs,
+      })
+    }
+    if (config.mode === "chain") {
+      return createChainProvider({
+        evmRpcUrl: config.chainEvmRpcUrl!,
+        bridgeAddress: config.chainBridgeAddress!,
+      })
+    }
+    return createMockProvider(store)
+  }
+
+  const provider: BridgeProvider = selectProvider()
 
   // Use store-backed maps when available, otherwise in-memory
   const heartbeats = store
