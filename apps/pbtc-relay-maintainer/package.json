@@ -7,6 +7,7 @@
   "scripts": {
     "genesis": "tsx src/index.ts genesis",
     "run": "tsx src/index.ts run",
+    "e2e:regtest": "tsx src/e2e/genesis-inclusion.ts",
     "test": "node --import tsx --test \"src/**/*.test.ts\"",
     "typecheck": "tsc --noEmit"
   },

@@ -1,0 +1,89 @@
+name: pBTC e2e (regtest genesis + inclusion proof)
+
+# Deterministic end-to-end harness for the SPV deposit path: a regtest Bitcoin
+# node + a local hardhat EVM + the deployed LightRelay, driven through
+# genesis -> tx -> SPV merkle inclusion proof by
+# apps/pbtc-relay-maintainer/src/e2e/genesis-inclusion.ts. Regtest uses constant
+# difficulty, so this covers genesis + inclusion (not per-epoch retarget — see
+# docs/SECURITY-ROADMAP.md §7).
+
+on:
+  pull_request:
+    paths:
+      - "apps/pbtc-relay-maintainer/**"
+      - "solidity/contracts/relay/**"
+      - "solidity/deploy/**"
+      - "system-tests/regtest/**"
+      - ".github/workflows/pbtc-e2e.yml"
+  workflow_dispatch:
+
+jobs:
+  regtest-e2e:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      BITCOIND_RPC_URL: http://127.0.0.1:18443
+      BITCOIND_RPC_USER: pbtc
+      BITCOIND_RPC_PASS: pbtc
+      EVM_RPC_URL: http://127.0.0.1:8545
+      # Well-known hardhat account #0 — local only, never a real key.
+      MAINTAINER_PRIVATE_KEY: "0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80"
+      PROOF_LENGTH: "4"
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20.x"
+
+      - name: Start regtest bitcoind
+        run: docker compose -f system-tests/regtest/docker-compose.regtest.yml up -d
+
+      - name: Wait for bitcoind RPC
+        run: |
+          for i in $(seq 1 30); do
+            if curl -s --user "$BITCOIND_RPC_USER:$BITCOIND_RPC_PASS" \
+              --data-binary '{"jsonrpc":"1.0","id":"ci","method":"getblockchaininfo","params":[]}' \
+              -H 'content-type: text/plain;' "$BITCOIND_RPC_URL/" | grep -q '"result"'; then
+              echo "bitcoind ready"; exit 0
+            fi
+            sleep 2
+          done
+          echo "bitcoind did not become ready"; exit 1
+
+      - name: Install solidity deps
+        working-directory: ./solidity
+        run: yarn install --frozen-lockfile
+
+      - name: Start hardhat node + deploy LightRelay
+        working-directory: ./solidity
+        run: |
+          npx hardhat node > hardhat-node.log 2>&1 &
+          for i in $(seq 1 30); do
+            if curl -s -X POST -H 'content-type: application/json' \
+              --data '{"jsonrpc":"2.0","id":1,"method":"eth_blockNumber","params":[]}' \
+              "$EVM_RPC_URL" | grep -q '"result"'; then
+              echo "hardhat node ready"; break
+            fi
+            sleep 2
+          done
+          npx hardhat deploy --network localhost --tags LightRelay
+          echo "RELAY_ADDRESS=$(node -e "console.log(require('./deployments/localhost/LightRelay.json').address)")" >> "$GITHUB_ENV"
+
+      - name: Install relay-maintainer deps
+        working-directory: ./apps/pbtc-relay-maintainer
+        run: npm ci
+
+      - name: Run genesis + inclusion-proof e2e
+        working-directory: ./apps/pbtc-relay-maintainer
+        run: npm run e2e:regtest
+
+      - name: Dump logs on failure
+        if: failure()
+        run: |
+          echo "::group::hardhat node"; cat solidity/hardhat-node.log || true; echo "::endgroup::"
+          echo "::group::bitcoind"; docker compose -f system-tests/regtest/docker-compose.regtest.yml logs || true; echo "::endgroup::"
+
+      - name: Tear down regtest
+        if: always()
+        run: docker compose -f system-tests/regtest/docker-compose.regtest.yml down -v || true

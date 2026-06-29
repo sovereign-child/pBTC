@@ -38,6 +38,13 @@ export function blockHash(header: Buffer): string {
   return Buffer.from(hash256(header)).reverse().toString("hex")
 }
 
+/** Merkle root committed in the header (bytes [36..68), internal byte order —
+ *  reverse for the explorer-style display hex). */
+export function merkleRoot(header: Buffer): Buffer {
+  assertLen(header)
+  return Buffer.from(header.subarray(36, 68))
+}
+
 /** Block timestamp (unix seconds). */
 export function timestamp(header: Buffer): number {
   assertLen(header)
