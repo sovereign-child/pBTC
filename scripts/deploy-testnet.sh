@@ -104,7 +104,7 @@ echo ""
 # SPV maintainer authorized → deposits/mints revert). They must be listed here.
 npx hardhat deploy \
   --network pulsechainTestnet \
-  --tags TBTCToken,ReimbursementPool,WalletRegistry,LightRelay,TBTC,VendingMachine,Bank,Bridge,TBTCVault,BankUpdateBridge,AuthorizeTBTCVault,MaintainerProxy,AuthorizeMaintainerProxyInBridge,AuthorizeSpvMaintainer \
+  --tags TBTCToken,ReimbursementPool,WalletRegistry,LightRelay,TBTC,VendingMachine,Bank,Bridge,TBTCVault,BankUpdateBridge,AuthorizeTBTCVault,MaintainerProxy,AuthorizeMaintainerProxyInBridge,AuthorizeSpvMaintainer,PauseOptimisticMinting \
   --export-all ./deployments/pulsechainTestnet-export.json
 
 echo ""
