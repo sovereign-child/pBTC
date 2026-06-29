@@ -26,6 +26,8 @@ Create `.env` from `.env.example`.
 | `BRIDGE_API_MODE` | no | `mock` | `mock` or `upstream` |
 | `GUARDIAN_MIN_ACTIVE_FOR_MINT` | no | `1` | Minimum active guardians required before `POST /deposits/init` is allowed |
 | `GUARDIAN_HEARTBEAT_TTL_MS` | no | `120000` | Guardian heartbeat freshness window in milliseconds |
+| `GUARDIAN_KEYS` | yes (non-mock) | - | Comma-separated `guardianId:secret` pairs used to HMAC-authenticate heartbeats. Empty disables auth (mock only). |
+| `GUARDIAN_AUTH_MAX_SKEW_MS` | no | `300000` | Allowed clock skew on the signed heartbeat timestamp |
 | `UPSTREAM_BRIDGE_API_URL` | yes (upstream mode) | - | Base URL for upstream service |
 | `UPSTREAM_BRIDGE_API_KEY` | no | - | Optional API key sent as `x-api-key` |
 | `UPSTREAM_TIMEOUT_MS` | no | `10000` | Per-request upstream timeout in milliseconds |
@@ -82,7 +84,19 @@ This runs table-driven HTTP contract checks for:
 
 ## Guardian quorum and mint gating
 
+> **Security note:** the guardian heartbeat is a **liveness** signal, **not** a
+> mint authorization. Real mint authorization is the on-chain SPV proof (see
+> `docs/SECURITY-ROADMAP.md` §3). The quorum below only gates whether this API
+> *offers* minting; it is not a trust boundary, and a heartbeat must never be
+> treated as proof a deposit occurred.
+
 - Guardians send periodic heartbeats to `POST /guardians/heartbeat` with `{ "guardianId": "...", "version": "..." }`.
+- **Authentication:** when `GUARDIAN_KEYS` is set, each heartbeat must include
+  `x-guardian-id`, `x-guardian-timestamp` (unix ms) and `x-guardian-signature`
+  (hex HMAC-SHA256 of `` `${id}.${timestamp}` `` using that guardian's secret).
+  Unauthenticated or unknown-guardian heartbeats are rejected `401`. Auth may be
+  left disabled **only** in `mock` mode (a startup warning is logged); any
+  non-mock deployment fails to start without `GUARDIAN_KEYS`.
 - The API counts active guardians seen within `GUARDIAN_HEARTBEAT_TTL_MS`.
 - Mint initialization (`POST /deposits/init`) is blocked with `503 guardian_quorum_unmet` until active guardians reach `GUARDIAN_MIN_ACTIVE_FOR_MINT`.
 - Current quorum state is exposed in `GET /health` under `guardians` and in `GET /guardians/status`.
