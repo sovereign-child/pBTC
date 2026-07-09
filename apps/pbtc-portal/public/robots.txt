@@ -1,0 +1,4 @@
+# Testnet demo — keep out of search until the bridge is live for testers.
+# Remove (and the noindex meta in index.html) when opening a real, indexable site.
+User-agent: *
+Disallow: /

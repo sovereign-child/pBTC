@@ -9,6 +9,7 @@ interface ImportMetaEnv {
 	readonly VITE_BRIDGE_API_URL?: string
 	readonly VITE_PULSECHAIN_NETWORK_NAME?: string
 	readonly VITE_PULSECHAIN_EXPLORER_BASE_URL?: string
+	readonly VITE_LIVE_BRIDGE?: string
 }
 
 interface ImportMeta {
