@@ -107,3 +107,23 @@ testnet, a single hardened signer is an acceptable, disclosed interim.
 M1–M2 are verifiable in CI (extend the regtest harness). M3+ require a live BTC
 testnet node + funded testnet keys + the deployed testnet contracts — a runner,
 not a sandbox. Build M1/M2 first so the risky live steps ride on a proven core.
+
+---
+
+## Appendix — M1 test wallet keypair (DONE)
+
+`TestWalletRegistry` now registers a wallet backed by a **real, well-known,
+TESTNET-ONLY** keypair the signer holds — publicly known on purpose
+(nothing-up-my-sleeve; no value on testnet):
+
+| Field | Value |
+|---|---|
+| Private key | `0x1111111111111111111111111111111111111111111111111111111111111111` |
+| Public key X | `0x4f355bdcb7cc0af728ef3cceb9615d90684bb5b2ca5f859ab0f0b704075871aa` |
+| Public key Y | `0x385b6b1b8ead809ca67454d9683fcf2ba03456d6fe2c4abe2b07f0fbdbb2f1c1` |
+| Compressed pubkey | `0x034f355bdcb7cc0af728ef3cceb9615d90684bb5b2ca5f859ab0f0b704075871aa` |
+
+The Bridge derives `walletPubKeyHash = hash160(compressedPubkey)`; the signer
+derives the same BTC-testnet P2WPKH/P2PKH address from the private key, so the
+on-chain wallet and the signer's key match. **Rotate to a non-published key
+before M5 (open to testers).** M2 (regtest sweep) will sign with this key.
