@@ -1,0 +1,152 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>pBTC Whitepaper — Bitcoin on PulseChain, verified by math</title>
+<meta name="description" content="Design and trust model of pBTC: a trust-minimized Bitcoin → PulseChain bridge built on tBTC v2 threshold cryptography and on-chain SPV proofs." />
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='16' fill='%230d0d18'/%3E%3Ctext x='32' y='45' font-size='40' text-anchor='middle' fill='%23f7931a' font-family='monospace' font-weight='700'%3E%E2%82%BF%3C/text%3E%3C/svg%3E" />
+<style>
+  :root{
+    --bg:#08080f; --card:#14141f; --line:#23233a; --line2:#31314c;
+    --btc:#f7931a; --btc2:#ffb454; --purple:#9a54e6;
+    --ink:#eef0f7; --muted:#a7aac4; --dim:#6b6e8c; --warn:#ffce6a;
+    --mono:ui-monospace,"SF Mono",SFMono-Regular,Menlo,Consolas,monospace;
+    --sans:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  @media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
+  body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--sans);
+    line-height:1.72;-webkit-font-smoothing:antialiased;
+    background-image:radial-gradient(700px 400px at 100% -5%,rgba(154,84,230,.10),transparent 60%);
+    background-attachment:fixed}
+  a{color:var(--btc2)}
+  :focus-visible{outline:2px solid var(--btc2);outline-offset:3px;border-radius:4px}
+  .disclaimer{font-family:var(--mono);font-size:.78rem;text-align:center;padding:9px 16px;color:var(--warn);
+    background:linear-gradient(90deg,rgba(247,147,26,.12),rgba(154,84,230,.12));border-bottom:1px solid var(--line)}
+  .disclaimer b{color:var(--ink)}
+  .topbar{position:sticky;top:0;z-index:10;background:rgba(8,8,15,.82);backdrop-filter:blur(10px);
+    border-bottom:1px solid var(--line)}
+  .topbar .in{max-width:780px;margin:0 auto;padding:14px 24px;display:flex;justify-content:space-between;align-items:center}
+  .home{display:flex;align-items:center;gap:10px;font-weight:800;letter-spacing:-.02em;color:var(--ink);text-decoration:none}
+  .home .mk{width:26px;height:26px;border-radius:7px;background:var(--btc);color:#0a0a12;display:grid;place-items:center;
+    font-family:var(--mono);font-weight:800}
+  .topbar .demo{font-family:var(--mono);font-size:.8rem;color:var(--muted);text-decoration:none}
+  .topbar .demo:hover{color:var(--ink)}
+
+  .doc{max-width:720px;margin:0 auto;padding:48px 24px 90px}
+  .doc-head{border-bottom:1px solid var(--line);padding-bottom:30px;margin-bottom:36px}
+  .eyebrow{font-family:var(--mono);font-size:.72rem;letter-spacing:.22em;text-transform:uppercase;color:var(--btc2)}
+  h1{font-size:clamp(2rem,5vw,2.7rem);letter-spacing:-.02em;line-height:1.12;text-wrap:balance;margin:.35em 0 .3em}
+  .sub{color:var(--muted);font-size:1.08rem;max-width:60ch}
+  .callout{margin:22px 0 0;background:var(--card);border:1px solid var(--line2);border-left:3px solid var(--btc);
+    border-radius:10px;padding:16px 18px;font-size:.92rem;color:var(--muted);font-family:var(--mono);line-height:1.6}
+  .callout b{color:var(--ink)}
+
+  h2{font-size:1.42rem;letter-spacing:-.01em;margin:2.4em 0 .1em;text-wrap:balance;scroll-margin-top:70px}
+  h2 .num{font-family:var(--mono);font-size:.8rem;color:var(--btc2);display:block;margin-bottom:.4em;letter-spacing:.1em}
+  h3{font-size:1.05rem;margin:1.8em 0 .3em}
+  p{margin:0 0 1.1em;color:#dfe2f0}
+  .lead-measure p, .doc p{max-width:66ch}
+  strong{color:var(--ink)}
+  ul,ol{color:#dfe2f0;padding-left:1.2em;margin:0 0 1.1em;max-width:66ch}
+  li{margin:.4em 0}
+  li::marker{color:var(--dim)}
+  code{font-family:var(--mono);font-size:.86em;background:rgba(255,255,255,.05);padding:1px 6px;border-radius:5px;color:var(--btc2)}
+  hr{border:0;border-top:1px solid var(--line);margin:2.4em 0}
+  .refs{font-size:.9rem;color:var(--muted)}
+  .backtop{font-family:var(--mono);font-size:.8rem}
+</style>
+</head>
+<body>
+  <div class="disclaimer">
+    Testnet is a <b>simulated demo</b> — no bridge is live. Do not send BTC (real or testnet) to any address.
+  </div>
+  <div class="topbar">
+    <div class="in">
+      <a class="home" href="index.html"><span class="mk">₿</span> pBTC</a>
+      <a class="demo" href="https://testnet.pulsechain-pbtc.com/">Testnet demo →</a>
+    </div>
+  </div>
+
+  <article class="doc">
+    <div class="doc-head">
+      <p class="eyebrow">Whitepaper · v0 draft</p>
+      <h1>Bitcoin on PulseChain, verified by math</h1>
+      <p class="sub">A trust-minimized Bitcoin → PulseChain bridge built on tBTC v2 threshold cryptography and on-chain SPV proofs.</p>
+      <div class="callout"><b>Status: testnet / pre-production.</b> The public testnet is a simulated demonstration; mainnet is not live. The code is an unaudited fork. Nothing here should be used with funds. See §7.</div>
+    </div>
+
+    <h2 id="abstract">Abstract</h2>
+    <p>Most "Bitcoin on chain X" today is an IOU: you send BTC to a company, it issues a token, and you trust it to hold the coins and give them back. That reintroduces exactly the custodial trust Bitcoin was built to remove. pBTC brings Bitcoin to PulseChain with a different design, inherited from Threshold Network's tBTC v2: <strong>a deposit is proven to have happened by an on-chain Bitcoin light client (SPV) — math, not a company's word</strong> — and custody of the underlying BTC is held by a distributed signing group rather than one operator. No bridge is fully trustless; pBTC's goal is to be <strong>trust-minimized</strong> and to say plainly where the remaining trust lives.</p>
+
+    <h2 id="s1"><span class="num">01</span>The problem</h2>
+    <p>For Bitcoin holders, one question keeps recurring: how do I use my BTC in a wider on-chain economy without giving it to a custodian? The common answer — wrapped BTC held by an intermediary — is convenient and <strong>centralized</strong>: it can be censored, frozen, or lost if the custodian is compromised. Bridge history is largely a history of that compromise. Roughly <strong>half of all bridge losses are custody-key compromise</strong> (Ronin ≈ $625M, Multichain ≈ $231M, Harmony ≈ $100M). No number of "validators" fixes weak custody.</p>
+
+    <h2 id="s2"><span class="num">02</span>Design principle: separate the two security jobs</h2>
+    <p>A bridge must be judged by two separate questions, and conflating them is how bridges get robbed:</p>
+    <ol>
+      <li><strong>Verification</strong> — <em>did this Bitcoin deposit really happen?</em> A question of fact, best answered by <strong>math</strong>: an on-chain light client that checks proof-of-work and inclusion. It should not depend on anyone's honesty.</li>
+      <li><strong>Custody</strong> — <em>who holds the BTC keys and signs to move it?</em> The honeypot and the genuinely hard problem. It is solved by <strong>distribution</strong> (no single person, host, or cloud) and <strong>economic accountability</strong> (staking, slashing) — not by verification.</li>
+    </ol>
+
+    <h2 id="s3"><span class="num">03</span>Layer 1 — Verification by math (on-chain SPV)</h2>
+    <p>pBTC verifies deposits with <code>LightRelay</code>, an on-chain Bitcoin light client. It stores block headers, checks their proof-of-work against the encoded difficulty target, and tracks the 2016-block retarget. To mint pBTC, the bridge requires a <strong>full SPV proof</strong>: a Merkle proof that the deposit transaction is in a block, checked against difficulty the relay has independently verified.</p>
+    <p>This makes the <strong>BTC → PulseChain direction trust-minimized by mathematics</strong> — it does not depend on guardian honesty. Two deliberate choices reinforce it: <strong>no optimistic minting at launch</strong> (minting requires a real proof, not a fast-path trust assumption), and <strong>conservative confirmations</strong> tuned against reorg risk. An off-chain relay maintainer keeps the client fed with headers; submission is permissionless, so many parties can keep it live.</p>
+
+    <h2 id="s4"><span class="num">04</span>Layer 2 — Custody (the hard part, stated honestly)</h2>
+    <p>Whoever holds the BTC keys is the target. tBTC's benchmark is a <strong>51-of-100 threshold-ECDSA</strong> signing group: the key is split so a majority must cooperate, the group is drawn from staked operators, and misbehavior is <strong>slashable</strong>. No single machine or person can move the BTC.</p>
+    <p>Standing up that full network is a multi-party, multi-quarter effort. pBTC is honest about the interim: until the threshold network is live, any bridge holding value must use custody that is <strong>distributed across independent hosts (never one person or one cloud — precisely how Multichain fell), HSM/MPC-backed, and capped small</strong>, with a public statement that custody is the trust assumption. <strong>This is the one place pBTC is not trust-minimized, and it will always be labeled as such.</strong></p>
+
+    <h2 id="s5"><span class="num">05</span>Layer 3 — Guardians (where breadth helps)</h2>
+    <p>PulseChain validators can run a <strong>pBTC guardian sidecar</strong> that independently maintains the SPV relay by submitting headers, <strong>watchtowers</strong> every mint and custody action against the Bitcoin chain, and can <strong>veto fraud and trigger a pause</strong>. Guardians are bonded to validator stake and <strong>slashed</strong> for attesting to or failing to veto fraud.</p>
+    <p>This is a <strong>veto + pause + relay</strong> layer, not a redundant "re-verify" layer — because minting already requires a cryptographic SPV proof, breadth genuinely adds security here (more independent watchers = harder to defraud). It strengthens the <em>minting</em> direction; it does not by itself solve <em>custody</em>.</p>
+
+    <h2 id="s6"><span class="num">06</span>How a deposit works</h2>
+    <ol>
+      <li><strong>Derive</strong> a unique Bitcoin deposit address from your PulseChain address and the bridge wallet's key.</li>
+      <li><strong>Send</strong> BTC to it and <strong>reveal</strong> the deposit on PulseChain.</li>
+      <li>The signing group <strong>sweeps</strong> the deposit into the bridge wallet on Bitcoin.</li>
+      <li>An <strong>SPV proof</strong> of that sweep is submitted on-chain and checked against verified difficulty.</li>
+      <li>Your balance is credited and <strong>pBTC is minted</strong> — 1:1, against a proven deposit.</li>
+    </ol>
+    <p>Redemption runs in reverse: burn pBTC, the group pays out BTC, and an SPV proof of the payout closes the request.</p>
+
+    <h2 id="s7"><span class="num">07</span>Current status (read this)</h2>
+    <p>pBTC today has tBTC's <strong>code</strong> but is still assembling its <strong>trust model</strong>:</p>
+    <ul>
+      <li><strong>Live/working:</strong> the on-chain SPV relay and proof machinery; the PulseChain contract suite deploys to testnet; the header relay maintainer; SPV Merkle-proof construction; a public testnet portal running a <strong>simulated (mock)</strong> deposit lifecycle — no real Bitcoin involved.</li>
+      <li><strong>In progress:</strong> replacing the mock with a real signer so genuine Bitcoin <strong>testnet</strong> deposits bridge end-to-end; guardian veto/pause with teeth; on-chain safety rails.</li>
+      <li><strong>Not done:</strong> the distributed custody network; independent audits; a public bug bounty; a long public testnet track record.</li>
+    </ul>
+    <p><strong>The fork's diff is unaudited.</strong> The changes that adapt tBTC to PulseChain are exactly where bugs hide, and they have not been reviewed. Treat everything as experimental.</p>
+
+    <h2 id="s8"><span class="num">08</span>Roadmap</h2>
+    <ul>
+      <li><strong>Phase 1 — Real SPV on testnet.</strong> Real verification + a single-key, disclosed test-signer on Bitcoin testnet; automated end-to-end tests.</li>
+      <li><strong>Phase 2 — Guardians.</strong> Validator-run watchtower/veto/pause + header relay, with bonding and slashing.</li>
+      <li><strong>Phase 3 — Safety rails.</strong> Pausability, deposit/TVL caps (start tiny), upgrade timelock + governance multisig, redemption watchtower.</li>
+      <li><strong>Phase 4 — Audits + bug bounty + long public testnet.</strong> Non-negotiable before mainnet.</li>
+      <li><strong>Phase 5 — Guarded mainnet.</strong> Tiny caps, gradual ramp, monitoring, one-button pause, public trust-model disclosure.</li>
+      <li><strong>Phase 6 — Decentralize custody.</strong> Migrate toward the full threshold network; raise caps as decentralization increases.</li>
+    </ul>
+
+    <h2 id="s9"><span class="num">09</span>Risks &amp; disclaimers</h2>
+    <ul>
+      <li><strong>No bridge is trustless.</strong> Correct cross-chain communication provably requires some trust assumption. pBTC is trust-minimized, never trustless.</li>
+      <li><strong>Unaudited, experimental software</strong>, provided under GPL-3.0 <strong>with no warranty</strong>. Do not use with funds you cannot afford to lose.</li>
+      <li><strong>Testnet has no value.</strong> The public testnet is a simulation / uses valueless testnet coins. It is not a live bridge.</li>
+      <li><strong>Custody is a trust assumption</strong> during interim phases, labeled wherever it applies.</li>
+    </ul>
+
+    <h2 id="s10"><span class="num">10</span>Get involved</h2>
+    <p>pBTC is <strong>open source (GPL-3.0)</strong>. There is <strong>no token, no sale, and no expectation of profit</strong> — participation is contribution to a public good, not an investment. Read and audit the <a href="https://github.com/sovereign-child/pBTC">code</a>, run a guardian / relay maintainer when the program opens, and test on the public testnet.</p>
+
+    <hr />
+    <h2 id="refs" style="font-size:1.05rem"><span class="num">Refs</span>References</h2>
+    <p class="refs">Threshold Network tBTC v2 documentation; Zamyatin et al., <em>SoK: Communication Across Distributed Ledgers</em> (FC 2021); <em>SoK: Security of Cross-chain Bridges</em> (RAID 2024); Chainalysis 2022 bridge report; Mandiant/Google Cloud Nomad post-mortem. See <code>docs/SECURITY-ROADMAP.md</code> in the repository for the full threat model and launch gates.</p>
+    <p class="backtop"><a href="index.html">← Back to pBTC</a></p>
+  </article>
+</body>
+</html>
