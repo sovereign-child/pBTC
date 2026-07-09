@@ -7,6 +7,9 @@ import { loadMetrics, type MetricCard } from "./lib/metrics"
 import { connectWallet, shortAddress } from "./lib/wallet"
 
 const env = (import.meta as any).env as Record<string, string | undefined>
+// Demo gate: the bridge is a simulated mock until a real signer exists. Only a
+// deliberate VITE_LIVE_BRIDGE=true build removes the "do not send BTC" banner.
+const isDemo = env.VITE_LIVE_BRIDGE !== "true"
 const transparencyHash = "#/transparency"
 const testnetHash = "#/testnet"
 
@@ -90,6 +93,12 @@ export function App() {
   return (
     <>
       <a className="skip-link" href="#main-content">Skip to main content</a>
+      {isDemo ? (
+        <div className="demo-banner" role="alert">
+          <strong>Simulated testnet demo</strong> — no real bridging. Deposit/redeem
+          are mocked. <strong>Do not send BTC (real or testnet) to any address shown.</strong>
+        </div>
+      ) : null}
       <main className="app" id="main-content">
       <header className="hero">
         <div className="brand-lockup">

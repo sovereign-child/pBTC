@@ -11,6 +11,11 @@ import {
   type RedemptionStatusResponse,
 } from "../lib/bridge-api"
 
+const env = (import.meta as any).env as Record<string, string | undefined>
+// Mirror App's demo gate: only a deliberate VITE_LIVE_BRIDGE=true build treats
+// deposit/redeem output as real rather than a simulated mock.
+const isDemo = env.VITE_LIVE_BRIDGE !== "true"
+
 type Props = {
   walletAddress: string | null
 }
@@ -136,6 +141,12 @@ export function BridgeActions({ walletAddress }: Props) {
   return (
     <section className="panel bridge-actions" id="bridge-actions" aria-busy={busy}>
       <h2>Start a Bridge</h2>
+      {isDemo ? (
+        <p className="demo-inline" role="alert">
+          ⚠️ Simulated demo — deposits/redeems are mocked and no address shown here is a
+          real Bitcoin address. <strong>Do not send BTC to it.</strong>
+        </p>
+      ) : null}
       <p className="subtitle">Connect wallet, enter BTC details, then track live status below.</p>
       <p className="note">Tip: run a small test amount first before larger transfers.</p>
       {!walletAddress ? <p className="helper-text">Connect wallet to enable bridge actions.</p> : null}
@@ -174,7 +185,12 @@ export function BridgeActions({ walletAddress }: Props) {
           {depositError ? <p className="wallet-error" aria-live="polite">{depositError}</p> : null}
           {depositStatus ? (
             <div className="status-box" aria-live="polite">
-              {depositInit?.depositAddress ? <p>Deposit Address: {depositInit.depositAddress}</p> : null}
+              {depositInit?.depositAddress ? (
+                <p>
+                  {isDemo ? "Simulated deposit address (demo — do NOT send BTC): " : "Deposit Address: "}
+                  {depositInit.depositAddress}
+                </p>
+              ) : null}
               {depositInit?.expiresAt ? <p>Expires At: {depositInit.expiresAt}</p> : null}
               <p>Status: {depositStatus.status}</p>
               <p>Deposit ID: {depositStatus.depositId}</p>
