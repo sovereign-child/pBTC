@@ -1,0 +1,305 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>pBTC — Bitcoin on PulseChain, verified by math</title>
+<meta name="description" content="pBTC is a trust-minimized Bitcoin to PulseChain bridge built on tBTC v2 threshold cryptography and on-chain SPV proofs. Testnet is a simulated demo — mainnet is not yet live." />
+<meta property="og:title" content="pBTC — Bitcoin on PulseChain, verified by math" />
+<meta property="og:description" content="A trust-minimized BTC → PulseChain bridge. Deposits proven by an on-chain Bitcoin light client — math, not middlemen. Testnet demo; mainnet not live." />
+<meta property="og:type" content="website" />
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='16' fill='%230d0d18'/%3E%3Ctext x='32' y='45' font-size='40' text-anchor='middle' fill='%23f7931a' font-family='monospace' font-weight='700'%3E%E2%82%BF%3C/text%3E%3C/svg%3E" />
+<style>
+  :root{
+    --bg:#08080f; --bg2:#0d0d18; --card:#14141f; --card2:#191926;
+    --line:#23233a; --line2:#31314c;
+    --btc:#f7931a; --btc2:#ffb454; --purple:#9a54e6; --pink:#ff3d9a;
+    --ink:#eef0f7; --muted:#9fa2bd; --dim:#6b6e8c;
+    --ok:#5fe3b0; --warn:#ffce6a;
+    --maxw:1060px; --radius:14px;
+    --mono:ui-monospace,"SF Mono",SFMono-Regular,Menlo,Consolas,monospace;
+    --sans:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  @media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}*{animation:none!important;transition:none!important}}
+  body{
+    margin:0;background:var(--bg);color:var(--ink);font-family:var(--sans);
+    line-height:1.62;-webkit-font-smoothing:antialiased;
+    background-image:
+      radial-gradient(760px 420px at 8% -6%,rgba(247,147,26,.09),transparent 60%),
+      radial-gradient(820px 520px at 102% -2%,rgba(154,84,230,.12),transparent 58%);
+    background-attachment:fixed;
+  }
+  a{color:inherit;text-decoration:none}
+  .wrap{max-width:var(--maxw);margin:0 auto;padding:0 22px}
+  h1,h2,h3{margin:0 0 .5em;text-wrap:balance;letter-spacing:-.02em;line-height:1.15}
+  h2{font-size:clamp(1.55rem,3.2vw,2.15rem)}
+  h3{font-size:1.08rem;letter-spacing:-.01em}
+  p{margin:0 0 1em}
+  :focus-visible{outline:2px solid var(--btc2);outline-offset:3px;border-radius:4px}
+  .eyebrow{font-family:var(--mono);font-size:.72rem;font-weight:600;letter-spacing:.22em;
+    text-transform:uppercase;color:var(--btc2)}
+  .muted{color:var(--muted)}
+  .mono{font-family:var(--mono)}
+
+  /* disclaimer */
+  .disclaimer{font-family:var(--mono);font-size:.78rem;text-align:center;
+    padding:9px 16px;color:var(--warn);
+    background:linear-gradient(90deg,rgba(247,147,26,.12),rgba(154,84,230,.12));
+    border-bottom:1px solid var(--line)}
+  .disclaimer b{color:var(--ink)}
+
+  /* nav */
+  header.nav{position:sticky;top:0;z-index:40;backdrop-filter:blur(10px);
+    background:rgba(8,8,15,.8);border-bottom:1px solid var(--line)}
+  .nav-in{display:flex;align-items:center;justify-content:space-between;height:62px}
+  .brand{display:flex;align-items:center;gap:11px;font-weight:800;letter-spacing:-.02em}
+  .brand .mk{width:30px;height:30px;border-radius:8px;display:grid;place-items:center;
+    background:var(--btc);color:#0a0a12;font-family:var(--mono);font-weight:800;font-size:1.05rem}
+  .brand small{display:block;font-family:var(--mono);font-size:.58rem;letter-spacing:.18em;
+    color:var(--dim);font-weight:600;margin-top:2px;text-transform:uppercase}
+  .nav-links{display:flex;align-items:center;gap:24px}
+  .nav-links a{font-size:.9rem;color:var(--muted)}
+  .nav-links a:hover{color:var(--ink)}
+  @media(max-width:720px){.nav-links a:not(.btn){display:none}}
+
+  /* buttons */
+  .btn{display:inline-flex;align-items:center;gap:8px;font-weight:700;font-size:.92rem;
+    padding:11px 20px;border-radius:11px;border:1px solid transparent;cursor:pointer;
+    transition:.15s ease;font-family:var(--sans)}
+  .btn-primary{background:var(--btc);color:#0a0a12;box-shadow:0 8px 22px -8px rgba(247,147,26,.55)}
+  .btn-primary:hover{background:var(--btc2);transform:translateY(-1px)}
+  .btn-ghost{border-color:rgba(247,147,26,.5);color:var(--ink);background:rgba(255,255,255,.03)}
+  .btn-ghost:hover{border-color:var(--btc);background:rgba(247,147,26,.09)}
+  .btn-lg{padding:14px 26px;font-size:1rem}
+
+  /* hero */
+  .hero{padding:70px 0 40px}
+  .hero-grid{display:grid;grid-template-columns:1.15fr .85fr;gap:46px;align-items:center}
+  @media(max-width:860px){.hero-grid{grid-template-columns:1fr;gap:30px}}
+  .hero h1{font-size:clamp(2.3rem,5.6vw,3.7rem);margin-bottom:.32em}
+  .hero h1 .g{color:var(--btc)}
+  .lede{font-size:clamp(1.05rem,2vw,1.24rem);color:var(--muted);max-width:36ch;margin-bottom:28px}
+  .hero-cta{display:flex;gap:13px;flex-wrap:wrap}
+  .hero-note{margin-top:20px;font-family:var(--mono);font-size:.76rem;color:var(--dim)}
+  .hero-note b{color:var(--muted);font-weight:600}
+
+  /* the "proof" panel — monospace, the signature motif */
+  .proof{background:linear-gradient(180deg,var(--card),#0f0f1a);border:1px solid var(--line2);
+    border-radius:var(--radius);padding:20px;font-family:var(--mono);font-size:.76rem;
+    box-shadow:0 30px 60px -30px rgba(0,0,0,.8)}
+  .proof .row{display:flex;justify-content:space-between;gap:12px;padding:5px 0;color:var(--muted);
+    border-bottom:1px dashed var(--line);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .proof .row:last-of-type{border-bottom:0}
+  .proof .k{color:var(--dim)}
+  .proof .v{color:var(--ink);overflow:hidden;text-overflow:ellipsis}
+  .proof .v.o{color:var(--btc2)}
+  .proof .stamp{margin-top:14px;display:flex;align-items:center;gap:10px;
+    color:var(--ok);font-weight:700;letter-spacing:.04em}
+  .proof .stamp .dot{width:8px;height:8px;border-radius:50%;background:var(--ok);
+    box-shadow:0 0 0 0 rgba(95,227,176,.5);animation:pulse 2s infinite}
+  @keyframes pulse{70%{box-shadow:0 0 0 8px rgba(95,227,176,0)}100%{box-shadow:0 0 0 0 rgba(95,227,176,0)}}
+
+  section{padding:52px 0;border-top:1px solid var(--line)}
+  .sec-head{max-width:600px;margin-bottom:34px}
+  .sec-head p{color:var(--muted)}
+
+  /* two jobs */
+  .jobs{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+  @media(max-width:760px){.jobs{grid-template-columns:1fr}}
+  .job{border-radius:var(--radius);padding:26px;border:1px solid var(--line);background:var(--card)}
+  .job.verify{border-color:rgba(247,147,26,.34);background:linear-gradient(180deg,rgba(247,147,26,.06),var(--card))}
+  .job.custody{border-color:rgba(154,84,230,.34);background:linear-gradient(180deg,rgba(154,84,230,.08),var(--card))}
+  .job .tag{font-family:var(--mono);font-size:.7rem;letter-spacing:.16em;text-transform:uppercase;color:var(--dim)}
+  .job h3{margin:.5em 0 .4em;font-size:1.22rem}
+  .job p{color:var(--muted);margin:0}
+  .job .verdict{margin-top:16px;font-family:var(--mono);font-size:.8rem}
+  .verify .verdict{color:var(--ok)}
+  .custody .verdict{color:var(--warn)}
+
+  /* steps */
+  .steps{display:grid;grid-template-columns:repeat(5,1fr);gap:12px}
+  @media(max-width:860px){.steps{grid-template-columns:repeat(2,1fr)}}
+  .step{border:1px solid var(--line);border-radius:12px;padding:18px;background:var(--card)}
+  .step .n{font-family:var(--mono);font-size:.78rem;color:var(--btc2);font-weight:700}
+  .step h3{font-size:.98rem;margin:.5em 0 .3em}
+  .step p{font-size:.86rem;color:var(--muted);margin:0}
+
+  /* layers */
+  .layers{display:grid;grid-template-columns:repeat(3,1fr);gap:18px}
+  @media(max-width:760px){.layers{grid-template-columns:1fr}}
+  .layer{border:1px solid var(--line);border-radius:var(--radius);padding:24px;background:var(--card)}
+  .layer .ln{font-family:var(--mono);font-size:.72rem;letter-spacing:.14em;text-transform:uppercase;color:var(--dim)}
+  .layer h3{margin:.5em 0 .4em}
+  .layer p{color:var(--muted);font-size:.92rem;margin:0}
+
+  /* status */
+  .status{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:28px}
+  .status ul{list-style:none;padding:0;margin:14px 0 0;display:grid;gap:10px}
+  .status li{display:flex;gap:12px;align-items:flex-start;color:var(--muted);font-size:.95rem}
+  .status li .pill{flex:0 0 auto;font-family:var(--mono);font-size:.68rem;font-weight:700;
+    letter-spacing:.06em;text-transform:uppercase;padding:3px 9px;border-radius:999px;margin-top:2px}
+  .pill.live{color:var(--ok);background:rgba(95,227,176,.1);border:1px solid rgba(95,227,176,.3)}
+  .pill.wip{color:var(--warn);background:rgba(255,206,106,.1);border:1px solid rgba(255,206,106,.3)}
+  .pill.no{color:var(--dim);background:rgba(139,139,160,.1);border:1px solid var(--line2)}
+
+  /* involved */
+  .involved{display:grid;grid-template-columns:1.2fr 1fr;gap:24px;align-items:center}
+  @media(max-width:760px){.involved{grid-template-columns:1fr}}
+  .involved .note{font-family:var(--mono);font-size:.82rem;color:var(--muted);
+    border-left:2px solid var(--btc);padding:6px 0 6px 16px}
+
+  footer{border-top:1px solid var(--line);padding:34px 0 60px;color:var(--dim);font-size:.85rem}
+  footer .fl{display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap;align-items:center}
+  footer a{color:var(--muted)}
+  footer a:hover{color:var(--ink)}
+</style>
+</head>
+<body>
+  <div class="disclaimer">
+    Testnet is a <b>simulated demo</b> — no bridge is live. Do not send BTC (real or testnet) to any address.
+  </div>
+
+  <header class="nav">
+    <div class="wrap nav-in">
+      <a class="brand" href="#top">
+        <span class="mk">₿</span>
+        <span>pBTC<small>Bitcoin · PulseChain</small></span>
+      </a>
+      <nav class="nav-links">
+        <a href="#how">How it works</a>
+        <a href="#security">Security</a>
+        <a href="whitepaper.html">Whitepaper</a>
+        <a class="btn btn-ghost" href="https://testnet.pulsechain-pbtc.com/">Testnet demo</a>
+      </nav>
+    </div>
+  </header>
+
+  <main id="top">
+    <section class="hero" style="border-top:0">
+      <div class="wrap hero-grid">
+        <div>
+          <p class="eyebrow">Trust-minimized BTC bridge</p>
+          <h1>Bitcoin on PulseChain, <span class="g">verified by math.</span></h1>
+          <p class="lede">
+            A deposit is proven by an on-chain Bitcoin light client — not a
+            company's word. Built on tBTC v2 threshold cryptography and SPV proofs.
+          </p>
+          <div class="hero-cta">
+            <a class="btn btn-primary btn-lg" href="https://testnet.pulsechain-pbtc.com/">View testnet demo</a>
+            <a class="btn btn-ghost btn-lg" href="whitepaper.html">Read the whitepaper</a>
+          </div>
+          <p class="hero-note">Open source (GPL-3.0) · <b>no token, no sale</b> · testnet / pre-production</p>
+        </div>
+        <div class="proof" aria-hidden="true">
+          <div class="row"><span class="k">btc.block</span><span class="v">#2 573 041</span></div>
+          <div class="row"><span class="k">pow.target</span><span class="v">0x17034219 ✓</span></div>
+          <div class="row"><span class="k">merkle.root</span><span class="v">4a5e1e4b…deda33b</span></div>
+          <div class="row"><span class="k">deposit.tx</span><span class="v o">b1fea524…111c5082</span></div>
+          <div class="row"><span class="k">inclusion</span><span class="v">merkle proof ✓</span></div>
+          <div class="row"><span class="k">confirmations</span><span class="v">6 / 6</span></div>
+          <div class="stamp"><span class="dot"></span>SPV PROOF VERIFIED ON-CHAIN</div>
+        </div>
+      </div>
+    </section>
+
+    <section id="security">
+      <div class="wrap">
+        <div class="sec-head">
+          <p class="eyebrow">The core idea</p>
+          <h2>Two security jobs. Never conflate them.</h2>
+          <p>Most bridges get robbed because they blur these. pBTC keeps them separate and is explicit about where trust remains.</p>
+        </div>
+        <div class="jobs">
+          <div class="job verify">
+            <span class="tag">Job 1 — Verification</span>
+            <h3>Did the deposit really happen?</h3>
+            <p>A question of fact, answered by math: an on-chain Bitcoin light client checks proof-of-work and Merkle inclusion. Minting requires a full SPV proof — no optimistic shortcut at launch.</p>
+            <div class="verdict">→ trust-minimized by mathematics</div>
+          </div>
+          <div class="job custody">
+            <span class="tag">Job 2 — Custody</span>
+            <h3>Who holds the BTC keys?</h3>
+            <p>The honeypot, and the hard problem — roughly half of all bridge losses are custody-key compromise. Solved by distribution and slashing, not by verification. Target: a 51-of-100 threshold signing group.</p>
+            <div class="verdict">→ trust assumption during interim phases, labeled as such</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="how">
+      <div class="wrap">
+        <div class="sec-head">
+          <p class="eyebrow">Deposit flow</p>
+          <h2>How a BTC deposit becomes pBTC</h2>
+          <p>Five steps, each verifiable. Redemption runs the same path in reverse.</p>
+        </div>
+        <div class="steps">
+          <div class="step"><div class="n">01</div><h3>Derive</h3><p>Get a unique BTC deposit address from your PulseChain address + the wallet key.</p></div>
+          <div class="step"><div class="n">02</div><h3>Send &amp; reveal</h3><p>Send BTC to it and reveal the deposit on PulseChain.</p></div>
+          <div class="step"><div class="n">03</div><h3>Sweep</h3><p>The signing group sweeps the deposit into the bridge wallet on Bitcoin.</p></div>
+          <div class="step"><div class="n">04</div><h3>Prove</h3><p>An SPV proof of the sweep is checked on-chain against verified difficulty.</p></div>
+          <div class="step"><div class="n">05</div><h3>Mint</h3><p>pBTC is minted 1:1 against the proven deposit.</p></div>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <div class="wrap">
+        <div class="sec-head">
+          <p class="eyebrow">Architecture</p>
+          <h2>Three layers, each doing one job</h2>
+        </div>
+        <div class="layers">
+          <div class="layer"><div class="ln">Layer 1 · Math</div><h3>On-chain SPV</h3><p>A Bitcoin light client (LightRelay) verifies headers and inclusion. This makes BTC → PulseChain trust-minimized without relying on anyone's honesty.</p></div>
+          <div class="layer"><div class="ln">Layer 2 · Keys</div><h3>Distributed custody</h3><p>A threshold-ECDSA signing group holds the BTC — no single person, host, or cloud — with staking and slashing. The hard problem, phased in honestly.</p></div>
+          <div class="layer"><div class="ln">Layer 3 · Watch</div><h3>Validator guardians</h3><p>Validators run sidecars that relay headers, watchtower every action, and can veto fraud and pause — bonded and slashable. Breadth genuinely helps here.</p></div>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <div class="wrap">
+        <div class="sec-head">
+          <p class="eyebrow">No spin</p>
+          <h2>Where pBTC actually is</h2>
+          <p>tBTC's code is here; the trust model is still being assembled. Specifically:</p>
+        </div>
+        <div class="status">
+          <ul>
+            <li><span class="pill live">Live</span><span>On-chain SPV relay + proof machinery; PulseChain contracts deploy to testnet; header relay maintainer; a testnet portal running a <b>simulated</b> deposit lifecycle.</span></li>
+            <li><span class="pill wip">Building</span><span>A real signer so genuine Bitcoin <b>testnet</b> deposits bridge end-to-end; guardian veto/pause with teeth; on-chain caps + timelocked governance.</span></li>
+            <li><span class="pill no">Not done</span><span>Distributed custody network; independent audits; public bug bounty; a long public testnet track record. <b>The fork's diff is unaudited.</b></span></li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <div class="wrap involved">
+        <div>
+          <p class="eyebrow">Contribute</p>
+          <h2>Get involved</h2>
+          <p class="muted">pBTC is a public good, not an investment. Read and audit the code, run a guardian when the program opens, and test on the public testnet.</p>
+          <div class="hero-cta">
+            <a class="btn btn-primary" href="https://github.com/sovereign-child/pBTC">View the code</a>
+            <a class="btn btn-ghost" href="whitepaper.html">Read the whitepaper</a>
+          </div>
+        </div>
+        <p class="note">
+          Open source under GPL-3.0. There is no token, no sale, and no expectation
+          of profit — participation is contribution to a public good.
+        </p>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <div class="wrap fl">
+      <span>pBTC — a Pulsechain-branded bridge powered by tBTC v2 infrastructure. Trust-minimized, never trustless.</span>
+      <span class="mono">testnet / pre-production · not for value</span>
+    </div>
+  </footer>
+</body>
+</html>
