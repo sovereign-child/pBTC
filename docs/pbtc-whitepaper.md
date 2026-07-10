@@ -164,11 +164,16 @@ experimental.
 - **Custody is a trust assumption** during the interim phases, and is labeled as
   such wherever it applies.
 
-## 10. Get involved
+## 10. No token · get involved
 
-pBTC is **open source (GPL-3.0)**. There is **no token, no sale, and no
-expectation of profit** — participation is contribution to a public good, not an
-investment.
+**pBTC will not issue a token and will not run a token sale.** There is no
+airdrop and no expectation of profit — pBTC is an **open-source (GPL-3.0) public
+good, not an investment.** pBTC itself is a 1:1 Bitcoin-backed utility asset, not
+a security; the project has no equity, shares, or revenue rights to offer. Any
+funding is by **voluntary donation or grant**, given as a gift with nothing
+provided in return (see `docs/pbtc-donation-terms.md`). Contributor and validator
+incentives, where they exist, are fee-share compensation for services rendered —
+paid in existing assets, never a new token.
 
 - **Read and audit the code**, open issues, and contribute.
 - **Run a guardian / relay maintainer** when the sidecar program opens.
