@@ -1,14 +1,5 @@
-* @pdyraga @lukasz-zimnoch @Shadowfiend @nkuba @piotr-roslaniec @lrsaturnino
-
-/solidity/ @pdyraga @lukasz-zimnoch @Shadowfiend @nkuba @piotr-roslaniec @lrsaturnino
-/cross-chain/ @pdyraga @lukasz-zimnoch @Shadowfiend @nkuba @piotr-roslaniec @lrsaturnino
-/typescript/ @pdyraga @lukasz-zimnoch @Shadowfiend @nkuba @piotr-roslaniec @lrsaturnino
-/system-tests/ @pdyraga @lukasz-zimnoch @Shadowfiend @nkuba @piotr-roslaniec @lrsaturnino
-/monitoring/ @pdyraga @lukasz-zimnoch @Shadowfiend @nkuba @piotr-roslaniec @lrsaturnino
-/yearn/ @pdyraga @lukasz-zimnoch @Shadowfiend @nkuba @piotr-roslaniec @lrsaturnino
-/apps/ @pdyraga @lukasz-zimnoch @Shadowfiend @nkuba @piotr-roslaniec @lrsaturnino
-/ops/ @pdyraga @lukasz-zimnoch @Shadowfiend @nkuba @piotr-roslaniec @lrsaturnino
-/docs/ @pdyraga @lukasz-zimnoch @Shadowfiend @nkuba @piotr-roslaniec @lrsaturnino
-/README.adoc @pdyraga @lukasz-zimnoch @Shadowfiend @nkuba @piotr-roslaniec @lrsaturnino
-/CONTRIBUTING.adoc @pdyraga @lukasz-zimnoch @Shadowfiend @nkuba @piotr-roslaniec @lrsaturnino
-/SECURITY.adoc @pdyraga @lukasz-zimnoch @Shadowfiend @nkuba @piotr-roslaniec @lrsaturnino
+# pBTC is a fork of Threshold Network's tBTC v2. Code ownership here is the
+# sovereign-child maintainers — NOT the upstream Keep/Threshold authors this
+# file previously (incorrectly) listed, which routed review requests to people
+# not on this project.
+* @logic-pro

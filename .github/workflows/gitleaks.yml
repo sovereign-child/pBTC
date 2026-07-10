@@ -1,0 +1,23 @@
+name: gitleaks
+
+# Secret scanning for the (now public) repo. Runs on PRs and pushes to main, and
+# scans the FULL history (fetch-depth: 0) so a secret committed earlier is caught,
+# not just new diffs. Check the first run's output.
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  scan:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: gitleaks
+        uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
