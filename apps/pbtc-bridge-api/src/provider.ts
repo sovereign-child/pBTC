@@ -42,8 +42,14 @@ const MOCK_CONFIRMATIONS_TARGET = 6
 const fakeTxHash = (): string =>
   `0x${randomUUID().replaceAll("-", "").padEnd(64, "0").slice(0, 64)}`
 
-const fakeTestnetAddress = (seed: string): string =>
-  `tb1qpbtc${seed.replaceAll("-", "").slice(0, 24)}`
+// Deliberately NOT a plausible Bitcoin address. The mock must never emit a string
+// a user could paste into a wallet and send funds to: it used to return
+// `tb1qpbtc…`, which looks like a real bech32 testnet address, and any BTC sent
+// there is unrecoverable. A stale/ungated frontend once displayed exactly that
+// with no warning — so fail safe at the source rather than relying on the UI to
+// label it. A real address only ever comes from the chain provider.
+const demoDepositAddress = (seed: string): string =>
+  `DEMO-DO-NOT-SEND-${seed.replaceAll("-", "").slice(0, 16)}`
 
 const elapsedSeconds = (startMs: number): number =>
   Math.floor((Date.now() - startMs) / 1000)
@@ -266,7 +272,7 @@ export const createMockProvider = (store?: Store): BridgeProvider => {
 
       const depositId = randomUUID()
       const createdAt = Date.now()
-      const depositAddress = fakeTestnetAddress(depositId)
+      const depositAddress = demoDepositAddress(depositId)
       const btcTxHash = fakeTxHash()
       const pulseTxHash = fakeTxHash()
 
