@@ -41,26 +41,32 @@ RUN_BTC_INTEGRATION=1 npm test
 
 Bring up a regtest Bitcoin node + a local EVM, then run the deterministic e2e
 driver (`apps/pbtc-relay-maintainer/src/e2e/genesis-inclusion.ts`). It genesises
-the LightRelay at the regtest genesis epoch and verifies a transaction's SPV
-merkle inclusion proof against the block header's committed root. Covers genesis
-+ tx-inclusion (not retarget — see scope note). This is what
-`.github/workflows/pbtc-e2e.yml` runs in CI.
+the LightRelay at the regtest genesis epoch, verifies a transaction's SPV merkle
+inclusion proof against the block header's committed root, then has the Bridge's
+own on-chain check (`BitcoinTx.validateProof`, via `TestBitcoinTx`) accept that
+proof and reject a tampered copy. Covers genesis + tx-inclusion (not the
+difficulty threshold or retarget: regtest difficulty is constant, see scope
+note). This is what `.github/workflows/pbtc-e2e.yml` runs in CI.
 
 ```bash
 # 1. Bitcoin regtest
 docker compose -f system-tests/regtest/docker-compose.regtest.yml up -d
 
-# 2. Local EVM + deploy the relay
+# 2. Local EVM + deploy the relay and the on-chain SPV verifier
 cd solidity
-npx hardhat node &                                   # local EVM on :8545 (chainId 31337)
+npx hardhat compile                                  # before the node, so it starts fast
+npx hardhat node --no-deploy &                       # local EVM on :8545 (chainId 31337)
 npx hardhat deploy --network localhost --tags LightRelay
 RELAY=$(node -e "console.log(require('./deployments/localhost/LightRelay.json').address)")
+VERIFIER=$(npx hardhat run --no-compile scripts/deploy-e2e-spv-verifier.ts --network localhost \
+  | sed -n 's/^SPV_VERIFIER_ADDRESS=//p')
 
 # 3. Run the deterministic genesis + inclusion-proof e2e driver
 cd ../apps/pbtc-relay-maintainer && npm ci
 EVM_RPC_URL=http://127.0.0.1:8545 \
 RELAY_ADDRESS=$RELAY \
-MAINTAINER_PRIVATE_KEY=0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80 \
+SPV_VERIFIER_ADDRESS=$VERIFIER \
+MAINTAINER_PRIVATE_KEY=0x59c6995e998f97a5a0044966f0945389dc9e86dae88c7a8412f4603b6b78690d \
 BITCOIND_RPC_URL=http://127.0.0.1:18443 \
 BITCOIND_RPC_USER=pbtc BITCOIND_RPC_PASS=pbtc \
 PROOF_LENGTH=4 \
@@ -68,10 +74,15 @@ npm run e2e:regtest
 ```
 
 The driver mines past coinbase maturity, genesises the relay, broadcasts a tx,
-mines it, then builds and verifies its inclusion proof — printing
-`e2e PASSED` on success (non-zero exit on any failed assertion). The private key
-above is the well-known hardhat account #0 (local only — never use on a real
-network).
+mines it, builds and verifies its inclusion proof, then mines confirmations and
+submits the Bridge-format proof on-chain, printing `e2e PASSED` on success
+(non-zero exit on any failed assertion). The private key above is the well-known
+hardhat account #1 (local only, never use it on a real network). It has to be #1:
+on `localhost` the `deployer` named account is index 1, so #1 owns the relay, and
+`genesis` is owner-only.
+
+No Docker? Any `bitcoind` ≥ 27 works with the same flags as the compose file:
+`bitcoind -regtest -server -txindex -rpcuser=pbtc -rpcpassword=pbtc -fallbackfee=0.0002`.
 
 ## Level 4 — Testnet (the real thing, zero value at risk)
 

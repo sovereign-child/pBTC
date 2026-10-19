@@ -2,16 +2,19 @@ name: pBTC e2e (regtest genesis + inclusion proof)
 
 # Deterministic end-to-end harness for the SPV deposit path: a regtest Bitcoin
 # node + a local hardhat EVM + the deployed LightRelay, driven through
-# genesis -> tx -> SPV merkle inclusion proof by
-# apps/pbtc-relay-maintainer/src/e2e/genesis-inclusion.ts. Regtest uses constant
-# difficulty, so this covers genesis + inclusion (not per-epoch retarget — see
-# docs/SECURITY-ROADMAP.md §7).
+# genesis -> tx -> SPV merkle inclusion proof -> on-chain BitcoinTx.validateProof
+# (via TestBitcoinTx) by apps/pbtc-relay-maintainer/src/e2e/genesis-inclusion.ts.
+# Regtest uses constant minimum difficulty, so this covers genesis + inclusion,
+# not the difficulty threshold or per-epoch retarget (docs/SECURITY-ROADMAP.md §7).
 
 on:
   pull_request:
     paths:
       - "apps/pbtc-relay-maintainer/**"
       - "solidity/contracts/relay/**"
+      - "solidity/contracts/bridge/BitcoinTx.sol"
+      - "solidity/contracts/test/TestBitcoinTx.sol"
+      - "solidity/scripts/deploy-e2e-spv-verifier.ts"
       - "solidity/deploy/**"
       - "system-tests/regtest/**"
       - ".github/workflows/pbtc-e2e.yml"
@@ -26,8 +29,11 @@ jobs:
       BITCOIND_RPC_USER: pbtc
       BITCOIND_RPC_PASS: pbtc
       EVM_RPC_URL: http://127.0.0.1:8545
-      # Well-known hardhat account #0 — local only, never a real key.
-      MAINTAINER_PRIVATE_KEY: "0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80"
+      # Well-known hardhat account #1 — local only, never a real key. It must be
+      # account #1: on `localhost` the `deployer` named account defaults to index
+      # 1 (solidity/hardhat.config.ts), so #1 owns the LightRelay and only the
+      # owner may call `genesis`.
+      MAINTAINER_PRIVATE_KEY: "0x59c6995e998f97a5a0044966f0945389dc9e86dae88c7a8412f4603b6b78690d"
       PROOF_LENGTH: "4"
     steps:
       - uses: actions/checkout@v4
@@ -62,20 +68,32 @@ jobs:
         working-directory: ./solidity
         run: yarn install --frozen-lockfile --ignore-engines
 
-      - name: Start hardhat node + deploy LightRelay
+      # Compile up front: otherwise `hardhat node` compiles everything before it
+      # starts listening, which outlasts the readiness wait below.
+      - name: Compile contracts
+        working-directory: ./solidity
+        run: npx hardhat compile
+
+      - name: Start hardhat node + deploy LightRelay and SPV verifier
         working-directory: ./solidity
         run: |
-          npx hardhat node > hardhat-node.log 2>&1 &
-          for i in $(seq 1 30); do
+          # --no-deploy: hardhat-deploy would otherwise run every deploy script
+          # on startup; only the LightRelay (and the verifier) are needed here.
+          npx hardhat node --no-deploy > hardhat-node.log 2>&1 &
+          ready=""
+          for i in $(seq 1 60); do
             if curl -s -X POST -H 'content-type: application/json' \
               --data '{"jsonrpc":"2.0","id":1,"method":"eth_blockNumber","params":[]}' \
               "$EVM_RPC_URL" | grep -q '"result"'; then
-              echo "hardhat node ready"; break
+              ready=1; echo "hardhat node ready"; break
             fi
             sleep 2
           done
+          if [ -z "$ready" ]; then echo "hardhat node did not become ready"; exit 1; fi
           npx hardhat deploy --network localhost --tags LightRelay
           echo "RELAY_ADDRESS=$(node -e "console.log(require('./deployments/localhost/LightRelay.json').address)")" >> "$GITHUB_ENV"
+          npx hardhat run --no-compile scripts/deploy-e2e-spv-verifier.ts --network localhost \
+            | grep '^SPV_VERIFIER_ADDRESS=0x' >> "$GITHUB_ENV"
 
       - name: Install relay-maintainer deps
         working-directory: ./apps/pbtc-relay-maintainer

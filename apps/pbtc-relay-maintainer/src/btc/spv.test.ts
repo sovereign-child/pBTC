@@ -21,8 +21,12 @@ const splitSiblings = (blob: Buffer): Buffer[] => {
 }
 
 // A synthetic block: a real coinbase (so its preimage relation holds) plus
-// deterministic non-coinbase txids.
-const coinbaseRaw = Buffer.from("01000000coinbase-bytes-for-test".padEnd(64, "0"))
+// deterministic non-coinbase txids. This is the Bitcoin mainnet genesis coinbase
+// (legacy serialization, so its txid is simply hash256 of these bytes).
+const coinbaseRaw = Buffer.from(
+  "01000000010000000000000000000000000000000000000000000000000000000000000000ffffffff4d04ffff001d0104455468652054696d65732030332f4a616e2f32303039204368616e63656c6c6f72206f6e206272696e6b206f66207365636f6e64206261696c6f757420666f722062616e6b73ffffffff0100f2052a01000000434104678afdb0fe5548271967f1a67130b7105cd6a828e03909a67962e0ea1f61deb649f6bc3f4cef38c4f35504e51ec112de5c384df7ba0b8d578a4c702b6bf11d5fac00000000",
+  "hex",
+)
 const coinbaseTxidDisplay = internalToDisplay(hash256(coinbaseRaw))
 const txidsDisplay = [
   coinbaseTxidDisplay,
@@ -73,6 +77,26 @@ test("buildSpvProof: coinbaseProof folds index 0 to the root, preimage recovers 
   )
   // The contract sha256's the preimage once more to recover the coinbase txid.
   assert.deepEqual(sha256(proof.coinbasePreimage), txidToInternal(coinbaseTxidDisplay))
+})
+
+test("buildSpvProof: a segwit coinbase's preimage recovers its txid, not its wtxid", () => {
+  // Regtest (Bitcoin Core 27.0) coinbase with the witness commitment — exactly
+  // what `getrawtransaction` returns for any segwit-era block's coinbase.
+  const segwitCoinbase = Buffer.from(
+    "020000000001010000000000000000000000000000000000000000000000000000000000000000ffffffff03016600ffffffff0204fd052a0100000016001413faad70328acc46a07f3fb6eea6ae7bcf18bb4b0000000000000000266a24aa21a9ed43ebd9018e7ca4384258b2b7b7f62d70bebe51527a8fccb812f9a2ce29501d060120000000000000000000000000000000000000000000000000000000000000000000000000",
+    "hex",
+  )
+  const segwitCoinbaseTxid = "0ef329df93d4542df9cfd989ccbd81267148aa2c888cdc242aaf2f1da73b4afb"
+  const ids = [segwitCoinbaseTxid, ...txidsDisplay.slice(1)]
+
+  const proof = buildSpvProof({
+    txidsDisplay: ids,
+    txIndex: 1,
+    coinbaseRawTx: segwitCoinbase,
+    headers: [header(1)],
+  })
+
+  assert.deepEqual(sha256(proof.coinbasePreimage), txidToInternal(segwitCoinbaseTxid))
 })
 
 test("buildSpvProof: rejects proving the coinbase itself", () => {

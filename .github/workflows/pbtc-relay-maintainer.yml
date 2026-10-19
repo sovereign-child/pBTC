@@ -22,9 +22,11 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      # Node >= 21: `npm test` passes a glob to `node --test`, which Node 20
+      # treats as a literal path ("Could not find src/**/*.test.ts").
       - uses: actions/setup-node@v4
         with:
-          node-version: "20.x"
+          node-version: "22.x"
           cache: "npm"
           cache-dependency-path: apps/pbtc-relay-maintainer/package-lock.json
 
