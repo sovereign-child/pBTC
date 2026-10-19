@@ -1,6 +1,7 @@
 import { createHash } from "node:crypto"
 import { HEADER_LEN } from "./header.js"
 import { buildMerkleProof, txidToInternal, type MerkleProof } from "./merkle.js"
+import { stripWitness } from "./tx.js"
 
 /**
  * Assembles the SPV proof the Bridge expects (`BitcoinTx.Proof`) for a tx that
@@ -11,8 +12,8 @@ import { buildMerkleProof, txidToInternal, type MerkleProof } from "./merkle.js"
  *   - merkleProof:      concatenated 32-byte sibling hashes (internal order)
  *   - txIndexInBlock:   the tx's 0-based index in the block
  *   - bitcoinHeaders:   concatenated 80-byte headers, lowest height first
- *   - coinbasePreimage: sha256(coinbase raw tx)  (the contract sha256's it again
- *                       to recover the coinbase txid)
+ *   - coinbasePreimage: sha256(coinbase non-witness raw tx)  (the contract
+ *                       sha256's it again to recover the coinbase txid)
  *   - coinbaseProof:    concatenated sibling hashes proving the coinbase (index 0)
  * The on-chain side checks the headers chain to the relay's stored difficulty and
  * folds merkleProof/coinbaseProof to the header's merkle root.
@@ -49,7 +50,9 @@ export interface SpvProofInputs {
   txidsDisplay: string[]
   /** 0-based index of the proven tx within the block. */
   txIndex: number
-  /** Raw bytes of the block's coinbase transaction (tx at index 0). */
+  /** Raw bytes of the block's coinbase transaction (tx at index 0), as
+   *  `getrawtransaction` returns them — segwit serialization is fine, the
+   *  witness is stripped before hashing. */
   coinbaseRawTx: Buffer
   /** 80-byte headers, lowest height first: the block's header followed by the
    *  next `proofLength - 1` headers that confirm it. */
@@ -66,7 +69,9 @@ export function buildSpvProof(inputs: SpvProofInputs): BitcoinSpvProof {
     merkleProof: concatSiblings(buildMerkleProof(leaves, inputs.txIndex)),
     txIndexInBlock: inputs.txIndex,
     bitcoinHeaders: concatHeaders(inputs.headers),
-    coinbasePreimage: sha256(inputs.coinbaseRawTx),
+    // The txid commits to the non-witness bytes only; every segwit-era
+    // coinbase carries a witness, so hashing it unstripped breaks the proof.
+    coinbasePreimage: sha256(stripWitness(inputs.coinbaseRawTx)),
     coinbaseProof: concatSiblings(buildMerkleProof(leaves, 0)),
   }
 }

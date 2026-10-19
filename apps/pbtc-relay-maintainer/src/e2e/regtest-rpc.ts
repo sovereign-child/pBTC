@@ -54,6 +54,11 @@ export class RegtestRpc {
     return this.call<string>("getblockheader", [hash, false])
   }
 
+  /** Raw tx hex (`verbose=false`) — segwit serialization when it has a witness. */
+  rawTx(txid: string): Promise<string> {
+    return this.call<string>("getrawtransaction", [txid, false])
+  }
+
   /** Block at `verbosity=1`: includes `height` and the ordered `tx` (txid) list. */
   block(hash: string): Promise<{ height: number; tx: string[]; merkleroot: string }> {
     return this.call("getblock", [hash, 1])
