@@ -21,6 +21,10 @@ export default func
 func.tags = ["AuthorizeLightRelayMaintainer"]
 func.dependencies = ["RetargetLightRelay"]
 
-// Only execute for mainnet.
+// Only execute for Ethereum mainnet (upstream tBTC). Deliberately NOT run on
+// PulseChain: enabling authorization would restrict `retarget` to authorized
+// submitters, but pBTC's design keeps header submission permissionless so any
+// validator sidecar can keep the relay live (docs/SECURITY-ROADMAP.md §4.4),
+// and `apps/pbtc-relay-maintainer` calls `LightRelay.retarget` directly.
 func.skip = async (hre: HardhatRuntimeEnvironment): Promise<boolean> =>
   hre.network.name !== "mainnet"

@@ -50,6 +50,18 @@ export const testConfig = {
   operatorsCount: 110,
 }
 
+// PulseChain deploy key(s): ACCOUNTS_PRIVATE_KEYS (comma-separated) wins, then
+// a single CONTRACT_OWNER_ACCOUNT_PRIVATE_KEY.
+function pulsechainAccounts(): string[] | undefined {
+  if (process.env.ACCOUNTS_PRIVATE_KEYS) {
+    return process.env.ACCOUNTS_PRIVATE_KEYS.split(",")
+  }
+  if (process.env.CONTRACT_OWNER_ACCOUNT_PRIVATE_KEY) {
+    return [process.env.CONTRACT_OWNER_ACCOUNT_PRIVATE_KEY]
+  }
+  return undefined
+}
+
 const config: HardhatUserConfig = {
   solidity: {
     compilers: [
@@ -127,26 +139,21 @@ const config: HardhatUserConfig = {
       tags: ["tenderly"],
     },
     pulsechainTestnet: {
-      url: process.env.PULSECHAIN_TESTNET_RPC_URL || process.env.CHAIN_API_URL || "",
+      url:
+        process.env.PULSECHAIN_TESTNET_RPC_URL ||
+        process.env.CHAIN_API_URL ||
+        "",
       chainId: process.env.PULSECHAIN_TESTNET_CHAIN_ID
         ? parseInt(process.env.PULSECHAIN_TESTNET_CHAIN_ID, 10)
         : 943,
-      accounts: process.env.ACCOUNTS_PRIVATE_KEYS
-        ? process.env.ACCOUNTS_PRIVATE_KEYS.split(",")
-        : process.env.CONTRACT_OWNER_ACCOUNT_PRIVATE_KEY
-        ? [process.env.CONTRACT_OWNER_ACCOUNT_PRIVATE_KEY]
-        : undefined,
+      accounts: pulsechainAccounts(),
     },
     pulsechain: {
       url: process.env.PULSECHAIN_RPC_URL || process.env.CHAIN_API_URL || "",
       chainId: process.env.PULSECHAIN_CHAIN_ID
         ? parseInt(process.env.PULSECHAIN_CHAIN_ID, 10)
         : 369,
-      accounts: process.env.ACCOUNTS_PRIVATE_KEYS
-        ? process.env.ACCOUNTS_PRIVATE_KEYS.split(",")
-        : process.env.CONTRACT_OWNER_ACCOUNT_PRIVATE_KEY
-        ? [process.env.CONTRACT_OWNER_ACCOUNT_PRIVATE_KEY]
-        : undefined,
+      accounts: pulsechainAccounts(),
       timeout: 300000,
       httpHeaders: {},
     },

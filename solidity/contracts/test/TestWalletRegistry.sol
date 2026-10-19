@@ -83,9 +83,12 @@ contract TestWalletRegistry is EcdsaWalletRegistry {
         // no-op
     }
 
-    function getWalletPublicKey(
-        bytes32 walletID
-    ) external view override returns (bytes memory) {
+    function getWalletPublicKey(bytes32 walletID)
+        external
+        view
+        override
+        returns (bytes memory)
+    {
         bytes memory key = _walletKeys[walletID];
         if (key.length == 0) {
             // Return a dummy key so calls don't revert
@@ -94,7 +97,12 @@ contract TestWalletRegistry is EcdsaWalletRegistry {
         return key;
     }
 
-    function getWalletCreationState() external pure override returns (EcdsaDkg.State) {
+    function getWalletCreationState()
+        external
+        pure
+        override
+        returns (EcdsaDkg.State)
+    {
         return EcdsaDkg.State.IDLE;
     }
 

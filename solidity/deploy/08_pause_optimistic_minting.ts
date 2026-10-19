@@ -20,19 +20,26 @@ const func: DeployFunction = async (hre: HardhatRuntimeEnvironment) => {
   const minters: string[] = await read("TBTCVault", "getMinters")
   if (minters.length > 0) {
     throw new Error(
-      `Refusing to launch: TBTCVault has ${minters.length} optimistic-minting minter(s) (${minters.join(
+      `Refusing to launch: TBTCVault has ${
+        minters.length
+      } optimistic-minting minter(s) (${minters.join(
         ", "
       )}). Optimistic minting must be disabled with zero minters at launch.`
     )
   }
 
-  const alreadyPaused: boolean = await read("TBTCVault", "isOptimisticMintingPaused")
+  const alreadyPaused: boolean = await read(
+    "TBTCVault",
+    "isOptimisticMintingPaused"
+  )
   if (alreadyPaused) {
     log("optimistic minting already paused; nothing to do")
     return
   }
 
-  log("pausing optimistic minting in TBTCVault (SPV-proof-only minting at launch)")
+  log(
+    "pausing optimistic minting in TBTCVault (SPV-proof-only minting at launch)"
+  )
   await execute(
     "TBTCVault",
     { from: deployer, log: true, waitConfirmations: 1 },

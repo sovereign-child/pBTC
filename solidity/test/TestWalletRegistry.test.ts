@@ -14,7 +14,9 @@ const TEST_PUBKEY_Y =
 
 describe("TestWalletRegistry (testnet stub)", () => {
   const deploy = async () => {
-    const registry = await (await getContractFactory("TestWalletRegistry")).deploy()
+    const registry = await (
+      await getContractFactory("TestWalletRegistry")
+    ).deploy()
     const recorder = await (
       await getContractFactory("MockBridgeWalletCallbackRecorder")
     ).deploy()

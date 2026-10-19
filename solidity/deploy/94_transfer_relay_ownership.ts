@@ -16,6 +16,10 @@ func.tags = ["TransferLightRelayOwnership"]
 func.dependencies = ["LightRelay"]
 func.runAtTheEnd = true
 
-// Only execute for mainnet.
+// Runs on Ethereum mainnet and on both PulseChain networks. On PulseChain the
+// relay is genesis'd after deploy by `apps/pbtc-relay-maintainer`
+// (`npm run genesis`), and `genesis` is owner-only — so after this transfer the
+// genesis transaction must be sent by `governance`. Genesis BEFORE handing
+// governance to a multisig, or submit it through the multisig.
 func.skip = async (hre: HardhatRuntimeEnvironment): Promise<boolean> =>
-  hre.network.name !== "mainnet"
+  !["mainnet", "pulsechain", "pulsechainTestnet"].includes(hre.network.name)
