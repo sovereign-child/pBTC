@@ -1,5 +1,5 @@
 /* eslint-disable no-console */
-import { deployments, ethers } from "hardhat"
+import { deployments, ethers, network } from "hardhat"
 
 /**
  * Post-deploy wiring assertion.
@@ -58,6 +58,44 @@ async function main(): Promise<void> {
     failures.push(
       `Bridge bank reference is ${refs.bank}, expected ${bankDep.address}`
     )
+  }
+
+  // SetDepositParameters / SetWalletParameters (deploy/14, deploy/15) run only
+  // on these networks; elsewhere the contract defaults are expected.
+  if (["mainnet", "pulsechain", "pulsechainTestnet"].includes(network.name)) {
+    const deposit = await bridge.depositParameters()
+    const wallet = await bridge.walletParameters()
+    const expected: [string, string, string][] = [
+      [
+        "depositTreasuryFeeDivisor",
+        deposit.depositTreasuryFeeDivisor.toString(),
+        "0",
+      ],
+      [
+        "depositRevealAheadPeriod",
+        deposit.depositRevealAheadPeriod.toString(),
+        "21945600",
+      ],
+      [
+        "walletCreationPeriod",
+        wallet.walletCreationPeriod.toString(),
+        "1209600",
+      ],
+      [
+        "walletCreationMinBtcBalance",
+        wallet.walletCreationMinBtcBalance.toString(),
+        "0",
+      ],
+    ]
+    expected.forEach(([name, actual, want]) => {
+      if (actual === want) {
+        console.log(`  ✓ Bridge ${name} == ${want}`)
+      } else {
+        failures.push(
+          `Bridge ${name} is ${actual}, expected ${want} — SetDepositParameters/SetWalletParameters did not run`
+        )
+      }
+    })
   }
 
   if (failures.length > 0) {

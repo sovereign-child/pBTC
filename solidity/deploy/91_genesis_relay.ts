@@ -30,6 +30,11 @@ export default func
 func.tags = ["GenesisLightRelay"]
 func.dependencies = ["LightRelay"]
 
-// Only execute for mainnet.
+// Only execute for Ethereum mainnet (upstream tBTC). Deliberately NOT run on
+// PulseChain: these hardcoded headers are the 2022 epoch tBTC launched with,
+// and on pulsechainTestnet they would be the wrong Bitcoin network entirely.
+// On PulseChain the relay is genesis'd after deploy from a recent, PoW-checked
+// epoch by `apps/pbtc-relay-maintainer` (`npm run genesis`) — see
+// docs/pbtc-testnet-deploy-runbook.md §3 and docs/SECURITY-ROADMAP.md §4.
 func.skip = async (hre: HardhatRuntimeEnvironment): Promise<boolean> =>
   hre.network.name !== "mainnet"

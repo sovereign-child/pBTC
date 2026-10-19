@@ -102,9 +102,11 @@ echo ""
 # way — so deploying only Bank,Bridge,TBTCVault leaves them OUT and the bridge
 # is deployed unwired (Bank doesn't know the Bridge; the Vault is untrusted; no
 # SPV maintainer authorized → deposits/mints revert). They must be listed here.
+# SetDepositParameters / SetWalletParameters / TransferLightRelayOwnership are
+# standalone launch-parameter steps with the same problem — list them too.
 npx hardhat deploy \
   --network pulsechainTestnet \
-  --tags TBTCToken,ReimbursementPool,WalletRegistry,LightRelay,TBTC,VendingMachine,Bank,Bridge,TBTCVault,BankUpdateBridge,AuthorizeTBTCVault,MaintainerProxy,AuthorizeMaintainerProxyInBridge,AuthorizeSpvMaintainer,PauseOptimisticMinting \
+  --tags TBTCToken,ReimbursementPool,WalletRegistry,LightRelay,TBTC,VendingMachine,Bank,Bridge,TBTCVault,BankUpdateBridge,AuthorizeTBTCVault,MaintainerProxy,AuthorizeMaintainerProxyInBridge,AuthorizeSpvMaintainer,PauseOptimisticMinting,SetDepositParameters,SetWalletParameters,TransferLightRelayOwnership \
   --export-all ./deployments/pulsechainTestnet-export.json
 
 echo ""

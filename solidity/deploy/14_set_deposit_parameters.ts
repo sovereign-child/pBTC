@@ -34,5 +34,8 @@ export default func
 func.tags = ["SetDepositParameters"]
 func.dependencies = ["Bridge"]
 
+// Runs on Ethereum mainnet (upstream tBTC) and on both PulseChain networks —
+// pBTC's production targets. Elsewhere (hardhat, sepolia, ...) the contract
+// defaults are kept.
 func.skip = async (hre: HardhatRuntimeEnvironment): Promise<boolean> =>
-  hre.network.name !== "mainnet"
+  !["mainnet", "pulsechain", "pulsechainTestnet"].includes(hre.network.name)
