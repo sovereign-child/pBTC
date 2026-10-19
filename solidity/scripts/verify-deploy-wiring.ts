@@ -43,7 +43,7 @@ async function main(): Promise<void> {
   // AuthorizeTBTCVault → Bridge.setVaultStatus(TBTCVault, true)
   const vaultTrusted: boolean = await bridge.isVaultTrusted(vaultDep.address)
   if (vaultTrusted) {
-    console.log(`  ✓ Bridge.isVaultTrusted(TBTCVault) == true`)
+    console.log("  ✓ Bridge.isVaultTrusted(TBTCVault) == true")
   } else {
     failures.push(
       `Bridge.isVaultTrusted(${vaultDep.address}) is false — AuthorizeTBTCVault did not run`
@@ -53,7 +53,7 @@ async function main(): Promise<void> {
   // Sanity: Bridge's internal Bank reference matches the deployed Bank.
   const refs = await bridge.contractReferences()
   if (eq(refs.bank, bankDep.address)) {
-    console.log(`  ✓ Bridge.contractReferences().bank == Bank`)
+    console.log("  ✓ Bridge.contractReferences().bank == Bank")
   } else {
     failures.push(
       `Bridge bank reference is ${refs.bank}, expected ${bankDep.address}`
@@ -100,7 +100,7 @@ async function main(): Promise<void> {
 
   if (failures.length > 0) {
     console.error("\n✗ Deploy wiring verification FAILED:")
-    for (const f of failures) console.error(`  - ${f}`)
+    failures.forEach((f) => console.error(`  - ${f}`))
     process.exitCode = 1
     return
   }
